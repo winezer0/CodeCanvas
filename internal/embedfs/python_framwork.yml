@@ -1,0 +1,64 @@
+# Python语言规则定义
+---
+name: Django
+type: framework
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["manage.py"]
+    contains: []
+  L2:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["django", "Django"]
+    extract_version_from_text:
+      pattern: 'Django==([\d\.]+)'
+  L3:
+    paths: ["wsgi.py"]
+    contains: []
+
+---
+name: FastAPI
+type: framework
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["fastapi", "FastAPI"]
+  L2:
+    paths: ["main.py", "app.py"]
+    contains: ["FastAPI("]
+
+---
+name: Flask
+type: framework
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["flask", "Flask"]
+  L2:
+    paths: ["app.py"]
+    contains: ["Flask("]
+
+---
+name: Tornado
+type: framework
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["tornado"]
+
+---
+name: Sanic
+type: framework
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["sanic"]

@@ -1,0 +1,188 @@
+package model
+
+import "time"
+
+// 代码画板包定义了 CodeCanvas 的核心数据结构
+//，CodeCanvas 是一款轻量级的代码性能分析和框架检测引擎
+// 本版本仅专注于技术栈识别——不包含安全元数据。
+
+// 常量定义
+const (
+	// 检测结果的置信度水平
+	ConfidenceHigh   = "high"
+	ConfidenceMedium = "medium"
+	ConfidenceLow    = "low"
+
+	// 规则类型
+	RuleTypeFramework = "framework"
+	RuleTypeComponent = "component"
+
+	// 代码所处的应用类别
+	CategoryFrontend = "frontend"
+	CategoryBackend  = "backend"
+	CategoryDesktop  = "desktop"
+)
+
+// FileIndex 存储代码库的文件索引结构，用于加速查找。
+type FileIndex struct {
+	// RootDir 是被索引的根目录绝对路径
+	RootDir string
+	// Files 存储所有文件的相对路径列表
+	Files []string
+	// NameMap 映射文件名到 Files 切片中的索引列表 (例如: "package.json" -> [0, 5, 10])
+	NameMap map[string][]int
+	// ExtensionMap 映射文件扩展名到 Files 切片中的索引列表 (例如: ".go" -> [1, 2, 3])
+	ExtensionMap map[string][]int
+}
+
+// NewFileIndex 创建一个新的空索引
+func NewFileIndex(rootDir string) *FileIndex {
+	return &FileIndex{
+		RootDir:      rootDir,
+		Files:        make([]string, 0),
+		NameMap:      make(map[string][]int),
+		ExtensionMap: make(map[string][]int),
+	}
+}
+
+// AddFile 向索引中添加一个文件
+func (fi *FileIndex) AddFile(relPath string, fileName string, ext string) {
+	idx := len(fi.Files)
+	fi.Files = append(fi.Files, relPath)
+
+	fi.NameMap[fileName] = append(fi.NameMap[fileName], idx)
+	fi.ExtensionMap[ext] = append(fi.ExtensionMap[ext], idx)
+}
+
+type CodeProfile struct {
+	Path              string         `json:"path"`
+	TotalFiles        int            `json:"total_files"`
+	TotalLines        int            `json:"total_lines"`
+	ErrorFiles        int            `json:"error_files"`        // Number of files that failed to process
+	FrontendLanguages []string       `json:"frontend_languages"` // 例如: ["TypeScript", "JavaScript"]
+	BackendLanguages  []string       `json:"backend_languages"`  // 例如: ["Java", "Go"]
+	DesktopLanguages  []string       `json:"desktop_languages"`  // 例如: ["C#", "C++"]
+	Languages         []LanguageInfo `json:"languages"`          // 所有检测到的语言的完整列表
+}
+
+// LanguageInfo  某一编程语言或标记语言的详细统计数据。
+type LanguageInfo struct {
+	Name         string `json:"name"` // 例如: "Java", "YAML"
+	Files        int    `json:"files"`
+	CodeLines    int    `json:"code_lines"`
+	CommentLines int    `json:"comment_lines"`
+	BlankLines   int    `json:"blank_lines"`
+}
+
+// DetectionResult 框架与组件识别结果 包含已检测到的框架和组件的列表。
+type DetectionResult struct {
+	Frameworks []DetectedItem `json:"frameworks"`
+	Components []DetectedItem `json:"components"`
+}
+
+// DetectedItem  框架与组件识别结果代表了一项已检测到的技术项目（框架或组件）。
+type DetectedItem struct {
+	Name       string `json:"name"`       // 例如: "gin", "log4j-core", "wails"
+	Type       string `json:"type"`       // "framework" 或 "component"
+	Language   string `json:"language"`   // 例如: "Go", "Java", "JavaScript"
+	Version    string `json:"version"`    // 版本字符串，可能为空
+	Category   string `json:"category"`   // "frontend" | "backend" | "desktop"
+	Confidence string `json:"confidence"` // "high" | "medium" | "low"
+	Evidence   string `json:"evidence"`   // 人类可读的检测原因
+}
+
+// FrameworkMetadata 支持列表元数据 描述了 CodeCanvas 能够识别的一种框架。
+type FrameworkMetadata struct {
+	Name     string            `json:"name"`
+	Language string            `json:"language"`
+	Levels   map[string]string `json:"levels"` // 例如: {"L1": "pom.xml", "L2": "Application.java"}
+}
+
+// ComponentMetadata 描述了 CodeCanvas 能够识别的一种组件。
+type ComponentMetadata struct {
+	Name     string            `json:"name"`
+	Language string            `json:"language"`
+	Levels   map[string]string `json:"levels"` // 例如: {"L1": "pom.xml", "L2": "Application.java"}
+}
+
+// FrameworkRuleDefinition 内部规则模型（对应 YAML 规则文件） 定义了如何检测框架或组件。 在启动时从 YAML 规则文件中加载。
+type FrameworkRuleDefinition struct {
+	Name     string              `yaml:"name"`
+	Type     string              `yaml:"type"` // "framework" or "component"
+	Language string              `yaml:"language"`
+	Category string              `yaml:"category"` // 针对框架: "frontend"/"backend"; 针对组件: "frontend"/"backend"
+	Levels   map[string]*RuleSet `yaml:"levels"`   // 键: "L1", "L2", "L3"
+}
+
+// RuleSet 针对一个检测级别，提供了组文件路径、内容关键词以及版本提取逻辑。
+type RuleSet struct {
+	Paths []string `yaml:"paths"`
+	// 可选: "contains" 中的所有字符串必须出现在文件内容中（逻辑与）
+	Contains []string `yaml:"contains,omitempty"`
+	// 可选: 使用正则表达式从文件内容中提取版本
+	ExtractVersionFromText *VersionExtractor `yaml:"extract_version_from_text,omitempty"`
+	// 可选: 使用正则表达式从匹配的文件路径中提取版本
+	ExtractVersionFromPath *VersionExtractor `yaml:"extract_version_from_path,omitempty"`
+}
+
+// VersionExtractor 定义了一个正则表达式模式，用于提取版本字符串 此模式必须包含一个捕获组；第一个组将用作版本号。
+type VersionExtractor struct {
+	Pattern string `yaml:"pattern"`
+}
+
+// CanvasReport 最终分析报告
+type CanvasReport struct {
+	CodeProfile CodeProfile     `json:"code_profile"`
+	Detection   DetectionResult `json:"detection"`
+	Timestamp   time.Time       `json:"timestamp"`
+	Version     string          `json:"codecanvas_version"`
+}
+
+// FrontendLanguageSet 包含已知的前端相关语言。  用于填充 CodeProfile.FrontendLanguages 字段。
+var FrontendLanguageSet = map[string]bool{
+	"JavaScript": true,
+	"TypeScript": true,
+	"HTML":       true,
+	"CSS":        true,
+	"Vue":        true,
+	"Svelte":     true,
+	"JSX":        true,
+	"TSX":        true,
+	"SCSS":       true,
+	"Less":       true,
+	"Stylus":     true,
+	"Handlebars": true,
+	"Pug":        true,
+}
+
+// BackendLanguageSet 包含已知的后端/服务器端编程语言。 用于填充 CodeProfile.BackendLanguages 字段。
+var BackendLanguageSet = map[string]bool{
+	"Java":        true,
+	"Python":      true,
+	"Go":          true,
+	"C#":          true,
+	"PHP":         true,
+	"Ruby":        true,
+	"Kotlin":      true,
+	"Scala":       true,
+	"Rust":        true,
+	"Swift":       true,
+	"Objective-C": true,
+	"Perl":        true,
+	"Lua":         true,
+	"Elixir":      true,
+	"Groovy":      true,
+	"Shell":       true, // often used in scripts/backends
+	"PowerShell":  true,
+}
+
+// GetLanguageCategory 返回给定语言的类别（前端/后端/其他）
+func GetLanguageCategory(languageName string) string {
+	if FrontendLanguageSet[languageName] {
+		return "frontend"
+	}
+	if BackendLanguageSet[languageName] {
+		return "backend"
+	}
+	return "other"
+}

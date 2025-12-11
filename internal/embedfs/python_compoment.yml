@@ -1,0 +1,13 @@
+# Python语言规则定义
+---
+name: requests
+type: component
+language: Python
+category: backend
+levels:
+  L1:
+    paths: ["requirements.txt", "Pipfile"]
+    contains: ["requests"]
+  L2:
+    paths: ["*.py"]
+    contains: ["import requests"]

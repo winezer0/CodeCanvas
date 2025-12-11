@@ -1,0 +1,42 @@
+# Java语言规则定义
+---
+name: Spring Boot
+type: framework
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml", "build.gradle"]
+    contains: ["spring-boot-starter"]
+    extract_version_from_text:
+      pattern: 'spring-boot-starter[^\d](\d+\.\d+\.\d+[a-zA-Z0-9\.-])'
+  L2:
+    paths: ["*.java"]
+    contains: ["@SpringBootApplication"]
+  L3:
+    paths: ["BOOT-INF", "src/main/resources/application.properties", "src/main/resources/application.yml"]
+    contains: []
+
+
+---
+name: Quarkus
+type: framework
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["quarkus"]
+  L2:
+    paths: ["src/main/resources/application.properties"]
+    contains: []
+
+---
+name: Micronaut
+type: framework
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["micronaut"]

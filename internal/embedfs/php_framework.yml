@@ -1,0 +1,137 @@
+# PHP语言规则定义
+---
+name: ThinkPHP
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["thinkphp/", "vendor/topthink/"]
+    contains: []
+  L2:
+    paths: ["public/index.php"]
+    contains: ["define('THINK_VERSION'"]
+  L3:
+    paths: ["runtime/"]
+    contains: []
+
+---
+name: Laravel
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["artisan"]
+    contains: []
+  L2:
+    paths: ["bootstrap/app.php", "config/app.php"]
+    contains: []
+  L3:
+    paths: ["storage/logs/"]
+    contains: []
+
+---
+name: Yii
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["vendor/yiisoft/", "yii"]
+    contains: []
+  L2:
+    paths: ["web/index.php"]
+    contains: ["Yii::getVersion()"]
+  L3:
+    paths: ["requirements.php"]
+    contains: []
+
+---
+name: WordPress
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["wp-config.php", "wp-admin/", "wp-includes/"]
+    contains: []
+
+---
+name: Drupal
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["checker/", "sites/default/settings.php"]
+    contains: []
+  L2:
+    paths: ["CHANGELOG.txt"]
+    contains: ["Drupal"]
+
+---
+name: CodeIgniter
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["system/", "application/"]
+    contains: []
+  L2:
+    paths: ["index.php"]
+    contains: ["CodeIgniter"]
+
+---
+name: Slim
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["vendor/slim/slim"]
+    contains: []
+  L2:
+    paths: ["index.php"]
+    contains: ["new \\Slim\\App"]
+
+---
+name: Laminas
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["vendor/laminas/"]
+    contains: []
+
+---
+name: Magento
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["app/etc/config.php", "vendor/magento/"]
+    contains: []
+
+---
+name: Joomla
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["administrator/", "configuration.php"]
+    contains: []
+
+---
+name: PrestaShop
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["config/settings.inc.php", "classes/"]
+    contains: []

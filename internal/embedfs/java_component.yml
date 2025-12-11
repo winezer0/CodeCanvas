@@ -1,0 +1,224 @@
+# Java语言规则定义
+---
+name: log4j-checker
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["log4j-checker"]
+    extract_version_from_text:
+      pattern: '<artifactId>log4j-checker</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["log4j-checker-*.jar"]
+    extract_version_from_path:
+      pattern: 'log4j-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+# Java语言规则定义
+---
+name: fastjson
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["fastjson"]
+    extract_version_from_text:
+      pattern: '<artifactId>fastjson</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["fastjson-*.jar"]
+    extract_version_from_path:
+      pattern: 'fastjson-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+---
+name: mysql-connector-java
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["mysql-connector-java"]
+    extract_version_from_text:
+      pattern: '<artifactId>mysql-connector-java</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["mysql-connector-java-*.jar", "mysql-connector-j-*.jar"]
+    extract_version_from_path:
+      pattern: 'mysql-connector-(?:java|j)-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+---
+name: postgresql
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["postgresql"]
+    extract_version_from_text:
+      pattern: '<artifactId>postgresql</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["postgresql-*.jar"]
+    extract_version_from_path:
+      pattern: 'postgresql-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+# Apache Commons Collections（CC 链核心）
+---
+name: commons-collections
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["commons-collections"]
+    extract_version_from_text:
+      pattern: '<artifactId>commons-collections</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["commons-collections-*.jar"]
+    extract_version_from_path:
+      pattern: 'commons-collections-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+# Apache Commons BeanUtils（CB 链核心）
+---
+name: commons-beanutils
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["commons-beanutils"]
+    extract_version_from_text:
+      pattern: '<artifactId>commons-beanutils</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["commons-beanutils-*.jar"]
+    extract_version_from_path:
+      pattern: 'commons-beanutils-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+# ROME（RSS/Atom 解析库，ROME 链）
+---
+name: rome
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["rome</artifactId>", "com.sun.syndication"]
+    extract_version_from_text:
+      pattern: '<artifactId>rome</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["rome-*.jar"]
+    extract_version_from_path:
+      pattern: 'rome-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+#Groovy（Groovy 链，常用于 Jenkins RCE）
+---
+name: groovy
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["groovy</artifactId>"]
+    extract_version_from_text:
+      pattern: '<artifactId>groovy</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["groovy-*.jar", "groovy-all-*.jar"]
+    extract_version_from_path:
+      pattern: 'groovy(?:-all)?-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+#  Spring Framework（Spring 链，如 Spring AOP + PropertyPathFactoryBean）
+---
+name: spring-checker
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["spring-checker</artifactId>"]
+    extract_version_from_text:
+      pattern: '<artifactId>spring-checker</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["spring-checker-*.jar"]
+    extract_version_from_path:
+      pattern: 'spring-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+# Hibernate Core（Hibernate 链）
+---
+name: hibernate-checker
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["hibernate-checker</artifactId>"]
+    extract_version_from_text:
+      pattern: '<artifactId>hibernate-checker</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["hibernate-checker-*.jar"]
+    extract_version_from_path:
+      pattern: 'hibernate-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+
+# Javassist（常用于动态字节码生成，辅助 gadget 链）
+---
+name: javassist
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["javassist</artifactId>", "org.javassist"]
+    extract_version_from_text:
+      pattern: '<artifactId>javassist</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["javassist-*.jar"]
+    extract_version_from_path:
+      pattern: 'javassist-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+#C3P0（数据库连接池，C3P0 链）
+---
+name: c3p0
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["c3p0</artifactId>"]
+    extract_version_from_text:
+      pattern: '<artifactId>c3p0</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["c3p0-*.jar"]
+    extract_version_from_path:
+      pattern: 'c3p0-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+
+# MyFaces（Apache MyFaces，JSF 链
+---
+name: myfaces-impl
+type: component
+language: Java
+category: backend
+levels:
+  L1:
+    paths: ["pom.xml"]
+    contains: ["myfaces-impl</artifactId>"]
+    extract_version_from_text:
+      pattern: '<artifactId>myfaces-impl</artifactId>\s*<version>([^<]+)</version>'
+  L3:
+    paths: ["myfaces-impl-*.jar"]
+    extract_version_from_path:
+      pattern: 'myfaces-impl-([\d.]+[a-zA-Z0-9\.-]*)\.jar'

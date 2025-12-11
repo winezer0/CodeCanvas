@@ -1,0 +1,419 @@
+package engine
+
+import (
+	"context"
+	"github.com/winezer0/codecanvas/internal/model"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+// TestNewRuleEngine tests the creation of a new rule engine with rules loaded from a directory.
+func TestNewRuleEngine(t *testing.T) {
+	// Create a temporary directory with test rules
+	tempDir, err := os.MkdirTemp("", "test_rules")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Write a test rule that will override the embedded Spring Boot rule
+	yamlContent := []byte(`- name: Spring Boot
+  type: framework
+  language: Java
+  category: backend
+  levels:
+    L1:
+      paths:
+      - pom.xml
+      contains:
+      - spring-boot-starter
+`)
+
+	if err := os.WriteFile(filepath.Join(tempDir, "java.yml"), yamlContent, 0644); err != nil {
+		t.Fatalf("Failed to write test rule file: %v", err)
+	}
+
+	// Create a new rule engine with the test rules
+	ruleEngine, err := NewCanvasEngine(tempDir)
+	if err != nil {
+		t.Fatalf("Failed to create rule engine: %v", err)
+	}
+
+	// Check that the rule engine has at least the embedded rules plus our custom rule
+	frameworks := ruleEngine.GetSupportedFrameworks()
+	if len(frameworks) < 5 { // We have at least 5 embedded frameworks
+		t.Errorf("Expected at least 5 frameworks (embedded + custom), got %d", len(frameworks))
+	}
+
+	// Check that Spring Boot rule is present (it should be either the embedded one or our custom one)
+	springBootFound := false
+	for _, fw := range frameworks {
+		if fw.Name == "Spring Boot" && fw.Language == "Java" {
+			springBootFound = true
+			break
+		}
+	}
+
+	if !springBootFound {
+		t.Errorf("Expected Spring Boot framework to be present")
+	}
+}
+
+// TestDetectFrameworks tests the framework detection functionality.
+func TestDetectFrameworks(t *testing.T) {
+	// We'll use the embedded rules directly without creating custom rules
+	// This tests that embedded rules work correctly
+
+	// Create a test project directory with Node.js backend files
+	projectDir, err := os.MkdirTemp("", "test_project")
+	if err != nil {
+		t.Fatalf("Failed to create test project directory: %v", err)
+	}
+	defer os.RemoveAll(projectDir)
+
+	// Create package.json file with Express dependency
+	packageJsonContent := []byte(`{
+  "name": "test-app",
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}`)
+
+	if err := os.WriteFile(filepath.Join(projectDir, "package.json"), packageJsonContent, 0644); err != nil {
+		t.Fatalf("Failed to write package.json: %v", err)
+	}
+
+	// Create a new rule engine with embedded rules only (empty rules directory)
+	ruleEngine, err := NewCanvasEngine("")
+	if err != nil {
+		t.Fatalf("Failed to create rule engine: %v", err)
+	}
+
+	// Build file index
+	index, err := buildTestIndex(projectDir)
+	if err != nil {
+		t.Fatalf("Failed to build file index: %v", err)
+	}
+
+	// Detect frameworks in the test project
+	ctx := context.Background()
+	result, err := ruleEngine.DetectFrameworks(ctx, index, []string{"JavaScript"})
+	if err != nil {
+		t.Fatalf("Failed to detect frameworks: %v", err)
+	}
+
+	// Check that Express was detected as a backend framework
+	// There might be multiple frameworks detected, so we'll check if Express is among them
+	expressFound := false
+	for _, fw := range result.Frameworks {
+		if fw.Name == "Express" {
+			expressFound = true
+			if fw.Language != "JavaScript" {
+				t.Errorf("Expected Express framework language 'JavaScript', got '%s'", fw.Language)
+			}
+			if fw.Category != model.CategoryBackend {
+				t.Errorf("Expected Express framework category 'backend', got '%s'", fw.Category)
+			}
+			if fw.Confidence != model.ConfidenceHigh {
+				t.Errorf("Expected Express framework confidence 'high', got '%s'", fw.Confidence)
+			}
+			break
+		}
+	}
+
+	if !expressFound {
+		t.Errorf("Expected Express framework to be detected")
+	}
+}
+
+// TestDetectComponents tests the component detection functionality.
+func TestDetectComponents(t *testing.T) {
+	// We'll use the embedded rules directly without creating custom rules
+	// This tests that embedded component rules work correctly
+
+	// Create a test project directory with component files
+	projectDir, err := os.MkdirTemp("", "test_project")
+	if err != nil {
+		t.Fatalf("Failed to create test project directory: %v", err)
+	}
+	defer os.RemoveAll(projectDir)
+
+	// Create package.json file with lodash dependency
+	packageJsonContent := []byte(`{
+  "name": "test-app",
+  "dependencies": {
+    "lodash": "^4.17.0"
+  }
+}`)
+
+	if err := os.WriteFile(filepath.Join(projectDir, "package.json"), packageJsonContent, 0644); err != nil {
+		t.Fatalf("Failed to write package.json: %v", err)
+	}
+
+	// Create a new rule engine with embedded rules only (empty rules directory)
+	ruleEngine, err := NewCanvasEngine("")
+	if err != nil {
+		t.Fatalf("Failed to create rule engine: %v", err)
+	}
+
+	// Build file index
+	index, err := buildTestIndex(projectDir)
+	if err != nil {
+		t.Fatalf("Failed to build file index: %v", err)
+	}
+
+	// Detect components in the test project
+	ctx := context.Background()
+	result, err := ruleEngine.DetectFrameworks(ctx, index, []string{"JavaScript"})
+	if err != nil {
+		t.Fatalf("Failed to detect components: %v", err)
+	}
+
+	// Check that lodash was detected as a frontend component (since we categorized JS libs as frontend by default if not backend specific)
+	// There might be multiple components detected, so we'll check if lodash is among them
+	lodashFound := false
+	for _, comp := range result.Components {
+		if comp.Name == "lodash" {
+			lodashFound = true
+			if comp.Language != "JavaScript" {
+				t.Errorf("Expected lodash component language 'JavaScript', got '%s'", comp.Language)
+			}
+			if comp.Category != model.CategoryFrontend {
+				t.Errorf("Expected lodash component category 'frontend', got '%s'", comp.Category)
+			}
+			break
+		}
+	}
+
+	if !lodashFound {
+		t.Errorf("Expected lodash component to be detected")
+	}
+}
+
+// TestGetLanguageCategory tests the language category classification.
+func TestGetLanguageCategory(t *testing.T) {
+	// Test frontend languages
+	frontendLanguages := []string{"JavaScript", "TypeScript", "HTML", "CSS", "Vue"}
+	for _, lang := range frontendLanguages {
+		if !model.FrontendLanguageSet[lang] {
+			t.Errorf("Expected '%s' to be a frontend language", lang)
+		}
+	}
+
+	// Test backend languages
+	backendLanguages := []string{"Java", "Python", "Go", "C#", "PHP", "Ruby"}
+	for _, lang := range backendLanguages {
+		if !model.BackendLanguageSet[lang] {
+			t.Errorf("Expected '%s' to be a backend language", lang)
+		}
+	}
+
+	// Test Node.js as backend
+	// JavaScript is in FrontendLanguageSet but can be used as backend
+	if !model.FrontendLanguageSet["JavaScript"] {
+		t.Errorf("Expected 'JavaScript' to be in FrontendLanguageSet")
+	}
+
+	// Create a temporary directory with custom component rules
+	tempDir, err := os.MkdirTemp("", "test_custom_rules")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Write the custom component rule to a YAML file
+	customYamlContent := []byte(`- name: CustomComponent
+  type: component
+  language: Go
+  category: backend
+  levels:
+    L2:
+      paths:
+      - internal/custom/*.go
+      contains:
+      - CustomComponent
+`)
+
+	if err := os.WriteFile(filepath.Join(tempDir, "go.yml"), customYamlContent, 0644); err != nil {
+		t.Fatalf("Failed to write custom component rule file: %v", err)
+	}
+
+	// Create a test project directory with custom component files
+	projectDir, err := os.MkdirTemp("", "test_custom_project")
+	if err != nil {
+		t.Fatalf("Failed to create test project directory: %v", err)
+	}
+	defer os.RemoveAll(projectDir)
+
+	// Create custom component directory and file
+	customDir := filepath.Join(projectDir, "internal", "custom")
+	if err := os.MkdirAll(customDir, 0755); err != nil {
+		t.Fatalf("Failed to create custom component directory: %v", err)
+	}
+
+	// Create custom component file
+	customComponentContent := []byte(`package custom
+
+// CustomComponent is a custom Go component
+type CustomComponent struct {}
+`)
+
+	if err := os.WriteFile(filepath.Join(customDir, "component.go"), customComponentContent, 0644); err != nil {
+		t.Fatalf("Failed to write custom component file: %v", err)
+	}
+
+	// Create a new rule engine with the custom component rules
+	ruleEngine, err := NewCanvasEngine(tempDir)
+	if err != nil {
+		t.Fatalf("Failed to create rule engine: %v", err)
+	}
+
+	// Build file index
+	index, err := buildTestIndex(projectDir)
+	if err != nil {
+		t.Fatalf("Failed to build file index: %v", err)
+	}
+
+	// Detect custom components in the test project
+	ctx := context.Background()
+	result, err := ruleEngine.DetectFrameworks(ctx, index, []string{"Go"})
+	if err != nil {
+		t.Fatalf("Failed to detect custom components: %v", err)
+	}
+
+	// Check that CustomComponent was detected as a custom component
+	if len(result.Components) != 1 {
+		t.Errorf("Expected 1 custom component, got %d", len(result.Components))
+		return
+	}
+
+	if result.Components[0].Name != "CustomComponent" {
+		t.Errorf("Expected component name 'CustomComponent', got '%s'", result.Components[0].Name)
+	}
+
+	if result.Components[0].Language != "Go" {
+		t.Errorf("Expected component language 'Go', got '%s'", result.Components[0].Language)
+	}
+
+	if result.Components[0].Category != model.CategoryBackend {
+		t.Errorf("Expected component category 'backend', got '%s'", result.Components[0].Category)
+	}
+}
+
+// TestEdgeCases tests edge cases in the rule engine functionality.
+func TestEdgeCases(t *testing.T) {
+	// Test with empty rules directory (should still load embedded rules)
+	emptyDir, err := os.MkdirTemp("", "test_empty_rules")
+	if err != nil {
+		t.Fatalf("Failed to create empty temp directory: %v", err)
+	}
+	defer os.RemoveAll(emptyDir)
+
+	// Create a rule engine with empty rules directory
+	ruleEngine, err := NewCanvasEngine(emptyDir)
+	if err != nil {
+		t.Fatalf("Failed to create rule engine with empty directory: %v", err)
+	}
+
+	// Check that embedded frameworks are still supported
+	if frameworks := ruleEngine.GetSupportedFrameworks(); len(frameworks) == 0 {
+		t.Errorf("Expected at least some embedded frameworks, got 0")
+	}
+
+	// Check that embedded components are still supported
+	if components := ruleEngine.GetSupportedComponents(); len(components) == 0 {
+		t.Errorf("Expected at least some embedded components, got 0")
+	}
+
+	// Test detection with no matching files
+	// Build file index for current directory
+	index, err := buildTestIndex(".")
+	if err != nil {
+		t.Fatalf("Failed to build file index: %v", err)
+	}
+
+	ctx := context.Background()
+	result, err := ruleEngine.DetectFrameworks(ctx, index, []string{"Java"})
+	if err != nil {
+		t.Fatalf("Failed to detect frameworks with no matching files: %v", err)
+	}
+
+	if len(result.Frameworks) != 0 {
+		t.Errorf("Expected 0 frameworks detected, got %d", len(result.Frameworks))
+	}
+
+	if len(result.Components) != 0 {
+		t.Errorf("Expected 0 components detected, got %d", len(result.Components))
+	}
+}
+
+// TestEmbeddedRulesLoad tests that embedded rules are correctly loaded
+func TestEmbeddedRulesLoad(t *testing.T) {
+	// Create a new rule engine without any custom rules (should use embedded only)
+	ruleEngine, err := NewCanvasEngine("")
+	if err != nil {
+		t.Fatalf("Failed to create rule engine: %v", err)
+	}
+
+	// Get all supported frameworks
+	frameworks := ruleEngine.GetSupportedFrameworks()
+	if len(frameworks) == 0 {
+		t.Error("Expected at least some embedded frameworks, got none")
+	}
+
+	// Check specific frameworks
+	expectedFrameworks := []string{"Express", "React", "Vue.js", "Angular", "Spring Boot", "Django", "Gin", "Echo"}
+	for _, expected := range expectedFrameworks {
+		found := false
+		for _, fw := range frameworks {
+			if fw.Name == expected {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected framework '%s' to be detected in embedded rules", expected)
+		}
+	}
+
+	// Get all supported components
+	components := ruleEngine.GetSupportedComponents()
+	if len(components) == 0 {
+		t.Error("Expected at least some embedded components, got none")
+	}
+
+	// Check specific components
+	expectedComponents := []string{"lodash", "axios", "requests"}
+	for _, expected := range expectedComponents {
+		found := false
+		for _, comp := range components {
+			if comp.Name == expected {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected component '%s' to be detected in embedded rules", expected)
+		}
+	}
+}
+
+// buildTestIndex creates a file index for testing
+func buildTestIndex(rootDir string) (*model.FileIndex, error) {
+	index := model.NewFileIndex(rootDir)
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			relPath, _ := filepath.Rel(rootDir, path)
+			relPath = filepath.ToSlash(relPath)
+			fileName := filepath.Base(path)
+			ext := filepath.Ext(path)
+			index.AddFile(relPath, fileName, ext)
+		}
+		return nil
+	})
+	return index, err
+}

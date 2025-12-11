@@ -1,0 +1,36 @@
+# Golang 语言规则定义
+
+# Go语言规则定义：Wails 桌面应用框架
+---
+name: wails
+type: framework
+language: Go
+category: desktop
+levels:
+  L1:
+    paths: ["go.mod"]
+    contains: ["github.com/wailsapp/wails/v2"]
+    extract_version_from_text:
+      pattern: 'github\.com/wailsapp/wails/v2\s+v([\d.]+[a-zA-Z0-9\.-]*)'
+  L2:
+    paths: ["wails.json", "wails.toml"]
+    contains: []
+  L3:
+    paths: ["main.go", "app.go"]
+    contains: ["\"github.com/wailsapp/wails/v2\"", "\"github.com/wailsapp/wails/v2/pkg/application\""]
+
+# Go语言规则定义：gRPC-Go
+---
+name: grpc-go
+type: component
+language: Go
+category: backend
+levels:
+  L1:
+    paths: ["go.mod"]
+    contains: ["google.golang.org/grpc"]
+    extract_version_from_text:
+      pattern: 'google\.golang\.org/grpc\s+v([\d.]+[a-zA-Z0-9\.-]*)'
+  L3:
+    paths: ["*.go"]
+    contains: ["\"google.golang.org/grpc\"", "grpc.NewServer(", "Register.*Server("]
