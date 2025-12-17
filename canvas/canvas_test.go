@@ -43,16 +43,16 @@ func main() {
 	}
 
 	// 运行分析
-	result, err := ToSimpleReport(tmpDir, "")
+	result, err := Analyze(tmpDir, "")
 	if err != nil {
-		t.Fatalf("ToSimpleReport 失败: %v", err)
+		t.Fatalf("Analyze 失败: %v", err)
 	}
 
 	// 验证结果
 
 	// 1. 验证后端语言
 	foundGo := false
-	for _, lang := range result.BackendLanguages {
+	for _, lang := range result.CodeProfile.BackendLanguages {
 		if lang == "Go" {
 			foundGo = true
 			break
@@ -64,8 +64,8 @@ func main() {
 
 	// 2. 验证框架 (Gin)
 	foundGin := false
-	for _, fw := range result.Frameworks {
-		if fw == "Gin" {
+	for _, fw := range result.Detection.Frameworks {
+		if fw.Name == "Gin" {
 			foundGin = true
 			break
 		}
@@ -75,7 +75,7 @@ func main() {
 	}
 
 	// 3. 验证前端语言 (应为空)
-	if len(result.FrontendLanguages) > 0 {
-		t.Errorf("预期前端语言为空，但检测到: %v", result.FrontendLanguages)
+	if len(result.CodeProfile.FrontendLanguages) > 0 {
+		t.Errorf("检测到前端语言列表: %v", result.CodeProfile.FrontendLanguages)
 	}
 }

@@ -6,14 +6,14 @@ language: PHP
 category: backend
 levels:
   L1:
-    paths: ["thinkphp/", "vendor/topthink/"]
+    paths: ["thinkphp/", "vendor/topthink/", "thinkphp.php"]
     contains: []
   L2:
-    paths: ["public/index.php"]
-    contains: ["define('THINK_VERSION'"]
+    paths: ["index.php"]
+    contains: ["thinkphp.php"]
   L3:
-    paths: ["runtime/"]
-    contains: []
+    paths: ["cli.php"]
+    contains: ["thinkphp.php"]
 
 ---
 name: Laravel
@@ -77,9 +77,6 @@ language: PHP
 category: backend
 levels:
   L1:
-    paths: ["system/", "application/"]
-    contains: []
-  L2:
     paths: ["index.php"]
     contains: ["CodeIgniter"]
 

@@ -2,10 +2,11 @@ package classifier
 
 import (
 	"encoding/json"
-	"github.com/winezer0/codecanvas/internal/model"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/winezer0/codecanvas/internal/model"
 )
 
 func TestDetectCategories(t *testing.T) {
@@ -90,7 +91,7 @@ func TestDetectCategories(t *testing.T) {
 				os.Remove(filepath.Join(tmpDir, "package.json"))
 			}
 
-			frontend, backend, _ := c.DetectCategories(tmpDir, tt.languages)
+			frontend, backend, _, _ := c.DetectCategories(tmpDir, tt.languages)
 
 			checkList(t, "Frontend", frontend, tt.wantFrontend)
 			checkList(t, "Backend", backend, tt.wantBackend)

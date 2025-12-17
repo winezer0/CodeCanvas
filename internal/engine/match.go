@@ -30,10 +30,11 @@ func (m *IndexMatcher) FindFiles(pattern string) ([]string, error) {
 	// Case 1: 精确相对路径 (e.g. "/package.json")
 	if strings.HasPrefix(pattern, "/") {
 		target := strings.TrimPrefix(pattern, "/")
-		// 检查索引中是否存在
-		for _, idx := range m.Index.NameMap[path.Base(target)] {
+		// 检查索引中是否存在 - 使用小写文件名作为键
+		for _, idx := range m.Index.NameMap[strings.ToLower(path.Base(target))] {
 			f := m.Index.Files[idx]
-			if f == target {
+			// 不区分大小写的路径比较
+			if strings.EqualFold(f, target) {
 				results = append(results, filepath.Join(m.Index.RootDir, f))
 			}
 		}
@@ -45,7 +46,8 @@ func (m *IndexMatcher) FindFiles(pattern string) ([]string, error) {
 	// Case 2: 文件名 (e.g. "package.json")
 	// 如果不包含路径分隔符，则为简单文件名匹配
 	if !strings.Contains(pattern, "/") && !strings.Contains(pattern, "*") {
-		if indices, ok := m.Index.NameMap[pattern]; ok {
+		// 使用小写键在NameMap中查找，实现不区分大小写的匹配
+		if indices, ok := m.Index.NameMap[strings.ToLower(pattern)]; ok {
 			for _, idx := range indices {
 				results = append(results, filepath.Join(m.Index.RootDir, m.Index.Files[idx]))
 			}
@@ -55,7 +57,8 @@ func (m *IndexMatcher) FindFiles(pattern string) ([]string, error) {
 
 	// Case 3: 后缀匹配 (e.g. "*.json") - 优化
 	if strings.HasPrefix(pattern, "*.") && !strings.Contains(pattern[1:], "/") {
-		ext := pattern[1:] // ".json"
+		// 使用小写扩展名作为ExtensionMap的键，实现不区分大小写的后缀匹配
+		ext := strings.ToLower(pattern[1:]) // ".json"
 		if indices, ok := m.Index.ExtensionMap[ext]; ok {
 			for _, idx := range indices {
 				results = append(results, filepath.Join(m.Index.RootDir, m.Index.Files[idx]))
@@ -66,8 +69,10 @@ func (m *IndexMatcher) FindFiles(pattern string) ([]string, error) {
 
 	// Case 5: 目录匹配 (模式以 / 结尾)
 	if strings.HasSuffix(pattern, "/") {
+		// 使用小写进行比较，实现不区分大小写的目录匹配
+		patternLower := strings.ToLower(pattern)
 		for _, fileRelPath := range m.Index.Files {
-			if strings.HasPrefix(fileRelPath, pattern) {
+			if strings.HasPrefix(strings.ToLower(fileRelPath), patternLower) {
 				results = append(results, filepath.Join(m.Index.RootDir, fileRelPath))
 			}
 		}
@@ -117,6 +122,7 @@ func matchPath(pattern, name string) (bool, error) {
 		// 1. QuoteMeta 转义特殊字符
 		// 2. 将 \* 替换为 [^/]* (非路径分隔符的任意字符)
 		// 3. 将 \*\* 替换为 .* (任意字符)
+		// 4. 添加 i 标志使正则不区分大小写
 
 		// 重置
 		regexPat = regexp.QuoteMeta(pattern)
@@ -124,10 +130,12 @@ func matchPath(pattern, name string) (bool, error) {
 		regexPat = strings.ReplaceAll(regexPat, "\\*", "[^/]*")
 		regexPat = "^" + regexPat + "$"
 
-		return regexp.MatchString(regexPat, name)
+		// 使用不区分大小写的正则匹配
+		return regexp.MatchString("(?i:"+regexPat+")", name)
 	}
 
-	return path.Match(pattern, name)
+	// 对于非 ** 模式，将 pattern 和 name 都转换为小写后再匹配
+	return path.Match(strings.ToLower(pattern), strings.ToLower(name))
 }
 
 // containsAllKeywords 检查文件是否包含所有必需的关键字。

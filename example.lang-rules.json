@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Svelte",
+    "category": "frontend",
+    "features": {
+      "file_patterns": ["**/*.svelte", "**/*.svx"],
+      "dependencies": ["svelte", "@sveltejs/kit", "svelte-preprocess"]
+    }
+  },
+  {
+    "name": "Vue",
+    "category": "frontend",
+    "features": {
+      "file_patterns": ["**/*.vue", "**/vue.config.js"],
+      "dependencies": ["vue", "vue-router", "vuex", "pinia", "nuxt"]
+    }
+  },
+  {
+    "name": "GraphQL",
+    "category": "backend",
+    "features": {
+      "file_patterns": ["**/*.graphql", "**/*.gql", "**/schema.graphql"],
+      "dependencies": ["graphql", "apollo-server", "graphql-yoga", "mercurius"]
+    }
+  },
+  {
+    "name": "Docker",
+    "category": "backend",
+    "features": {
+      "file_patterns": ["**/Dockerfile", "**/docker-compose.yml", "**/docker-compose.yaml"]
+    }
+  },
+  {
+    "name": "YAML",
+    "category": "backend",
+    "features": {
+      "file_patterns": ["**/*.yml", "**/*.yaml", "**/docker-compose.*", "**/.github/workflows/*"]
+    }
+  },
+  {
+    "name": "Shell",
+    "category": "backend",
+    "features": {
+      "file_patterns": ["**/*.sh", "**/scripts/*", "**/*.bash", "**/*.zsh"]
+    }
+  },
+  {
+    "name": "Markdown",
+    "category": "frontend",
+    "features": {
+      "file_patterns": ["**/*.md", "**/*.markdown", "**/README*", "**/CHANGELOG*"]
+    }
+  },
+  {
+    "name": "Python",
+    "category": "desktop",
+    "features": {
+      "dependencies": ["tkinter", "pyqt5", "pysimplegui", "wxpython", "kivy"]
+    }
+  },
+  {
+    "name": "JavaScript",
+    "category": "backend",
+    "features": {
+      "dependencies": ["express", "koa", "nestjs", "fastify", "hapi", "meteor"],
+      "file_patterns": ["**/server.js", "**/server.ts", "**/api/**/*", "**/backend/**/*"]
+    }
+  },
+  {
+    "name": "TypeScript",
+    "category": "backend",
+    "features": {
+      "dependencies": ["express", "koa", "nestjs", "fastify", "hapi"],
+      "file_patterns": ["**/server.ts", "**/api/**/*.ts", "**/backend/**/*.ts"]
+    }
+  },
+  {
+    "name": "Rust",
+    "category": "desktop",
+    "features": {
+      "dependencies": ["gtk", "qt_widgets", "fltk", "tauri"],
+      "file_patterns": ["**/Cargo.toml", "**/*.rs"]
+    }
+  },
+  {
+    "name": "C#",
+    "category": "desktop",
+    "features": {
+      "dependencies": ["wpf", "winforms", "avalonia", "uno.platform"],
+      "file_patterns": ["**/*.xaml", "**/*.csproj"]
+    }
+  }
+]

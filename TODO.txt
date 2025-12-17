@@ -1,0 +1,40 @@
+TODO
+1 重构规则结构,取消可信度设计,只保留高可信度的规则
+name: ThinkPHP
+type: framework
+language: PHP
+category: backend
+levels:
+  L1:
+    paths: ["thinkphp/", "vendor/topthink/", "thinkphp.php"]
+    contains: []
+  L2:
+    paths: ["index.php"]
+    contains: ["thinkphp.php"]
+  L3:
+    paths: ["cli.php"]
+    contains: ["thinkphp.php"]
+
+修改为
+name: ThinkPHP
+type: framework
+language: PHP
+category: backend
+rules:
+    paths: ["thinkphp/"]
+    contains: []
+
+    paths: ["vendor/topthink/"]
+    contains: []
+
+    paths: ["thinkphp.php"]
+    contains: []
+
+    paths: ["index.php"]
+    contains: ["thinkphp.php"]
+
+    paths: ["cli.php"]
+    contains: ["thinkphp.php"]
+多条规则之间是或者关系，同一个规则之间的paths/contains是与关系
+
+2 优化语言分类设置，将语言规则也改为配置文件格式 并写出到yml配置文件

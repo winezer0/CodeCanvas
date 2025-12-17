@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 // FileIndex 存储代码库的文件索引结构，用于加速查找。
 type FileIndex struct {
 	// RootDir 是被索引的根目录绝对路径
@@ -27,6 +29,7 @@ func (fi *FileIndex) AddFile(relPath string, fileName string, ext string) {
 	idx := len(fi.Files)
 	fi.Files = append(fi.Files, relPath)
 
-	fi.NameMap[fileName] = append(fi.NameMap[fileName], idx)
-	fi.ExtensionMap[ext] = append(fi.ExtensionMap[ext], idx)
+	// 使用小写键，实现不区分大小写的查找
+	fi.NameMap[strings.ToLower(fileName)] = append(fi.NameMap[strings.ToLower(fileName)], idx)
+	fi.ExtensionMap[strings.ToLower(ext)] = append(fi.ExtensionMap[strings.ToLower(ext)], idx)
 }
