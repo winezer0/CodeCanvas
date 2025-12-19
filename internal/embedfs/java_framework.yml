@@ -4,39 +4,315 @@ name: Spring Boot
 type: framework
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml", "build.gradle"]
-    contains: ["spring-boot-starter"]
-    extract_version_from_text:
-      pattern: 'spring-boot-starter[^\d](\d+\.\d+\.\d+[a-zA-Z0-9\.-])'
-  L2:
-    paths: ["*.java"]
-    contains: ["@SpringBootApplication"]
-  L3:
-    paths: ["BOOT-INF", "src/main/resources/application.properties", "src/main/resources/application.yml"]
-    contains: []
-
+rules:
+  # 规则1：通过pom.xml或build.gradle文件检测
+  - file_contents:
+      pom.xml:
+        - "spring-boot-starter"
+  - file_contents:
+      build.gradle:
+        - "spring-boot-starter"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "spring-boot"
+  # 规则3：通过Java文件中的Spring Boot注解检测
+  - file_contents:
+      "*.java":
+        - "@SpringBootApplication"
+  # 规则4：通过Spring Boot特有的目录和文件检测
+  - paths:
+      - "BOOT-INF"
+  - paths:
+      - "src/main/resources/application.yml"
+  - paths:
+      - "src/main/resources/application.properties"
+  # 规则5：通过Spring Boot JAR文件检测
+  - paths:
+      - "spring-boot-*.jar"
+  - paths:
+      - "spring-boot-starter-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*spring-boot.*</version>'
+      - '<spring-boot.version>([^<]+)</spring-boot.version>'
+      - 'spring-boot-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "build.gradle"
+    patterns:
+      - "springBoot\\.version\\s*=\\s*[\"']([^\"']+)[\"']"
+      - "implementation.*spring-boot.*[\"']([^\"']+)[\"']"
+  - file_pattern: "build.xml"
+    patterns:
+      - 'spring-boot.*version="([0-9.]+)"'
+  - file_pattern: "spring-boot-*.jar"
+    patterns:
+      - 'spring-boot-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+      - 'spring-boot-([0-9.]+)\\.jar'
+  - file_pattern: "spring-boot-starter-*.jar"
+    patterns:
+      - 'spring-boot-starter-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
 ---
 name: Quarkus
 type: framework
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["quarkus"]
-  L2:
-    paths: ["src/main/resources/application.properties"]
-    contains: []
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "quarkus"
+  # 规则2：通过配置文件检测
+  - paths:
+      - "src/main/resources/application.properties"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<quarkus.platform.version>([^<]+)</quarkus.platform.version>'
+      - '<version>.*quarkus.*</version>'
+  - file_pattern: "build.gradle"
+    patterns:
+      - "quarkusPlatformVersion\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Micronaut
 type: framework
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["micronaut"]
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "micronaut"
+  # 规则2：通过Java文件中的Micronaut注解检测
+  - file_contents:
+      "*.java":
+        - "@MicronautApplication"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<micronaut.version>([^<]+)</micronaut.version>'
+      - '<version>.*micronaut.*</version>'
+  - file_pattern: "build.gradle"
+    patterns:
+      - "micronautVersion\\s*=\\s*[\"']([^\"']+)[\"']"
+
+---
+name: Spring MVC
+type: framework
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "spring-webmvc"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "spring-webmvc"
+  # 规则3：通过Java文件中的Spring MVC注解检测
+  - file_contents:
+      "*.java":
+        - "@Controller"
+  - file_contents:
+      "*.java":
+        - "@RequestMapping"
+  # 规则4：通过Spring MVC配置文件检测
+  - paths:
+      - "WEB-INF/spring-servlet.xml"
+  # 规则5：通过Spring MVC JAR文件检测
+  - paths:
+      - "spring-web-*.jar"
+  - paths:
+      - "spring-webmvc-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*spring-webmvc.*</version>'
+      - '<spring.version>([^<]+)</spring.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'spring-webmvc.*version="([0-9.]+)"'
+  - file_pattern: "spring-webmvc-*.jar"
+    patterns:
+      - 'spring-webmvc-([0-9.]+)\\.jar'
+      - 'spring-webmvc-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+---
+name: Hibernate ORM
+type: framework
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "hibernate-core"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "hibernate"
+  # 规则3：通过Hibernate配置文件检测
+  - paths:
+      - "hibernate.cfg.xml"
+  - paths:
+      - "persistence.xml"
+  # 规则4：通过Java文件中的Hibernate注解检测
+  - file_contents:
+      "*.java":
+        - "@Entity"
+  - file_contents:
+      "*.java":
+        - "@Table"
+  - file_contents:
+      "*.java":
+        - "@Column"
+  # 规则5：通过Hibernate JAR文件检测
+  - paths:
+      - "hibernate-core-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*hibernate-core.*</version>'
+      - '<hibernate.version>([^<]+)</hibernate.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'hibernate.*version="([0-9.]+)"'
+  - file_pattern: "hibernate.cfg.xml"
+    patterns:
+      - "hibernate.version\\s*=\\s*[\"']([^\"']+)[\"']"
+  - file_pattern: "hibernate-core-*.jar"
+    patterns:
+      - 'hibernate-core-([0-9.]+)\\.jar'
+      - 'hibernate-core-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+---
+name: Apache Struts
+type: framework
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "struts2-core"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "struts2"
+  # 规则3：通过Struts配置文件检测
+  - paths:
+      - "struts.xml"
+    file_contents: {}
+  # 规则4：通过Java文件中的Struts注解检测
+  - file_contents:
+      "*.java":
+        - "@Action"
+  - file_contents:
+      "*.java":
+        - "@Namespace"
+  # 规则5：通过Struts JAR文件检测
+  - paths:
+      - "struts2-core-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*struts2-core.*</version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'struts2-core.*version="([0-9.]+)"'
+  - file_pattern: "struts2-core-*.jar"
+    patterns:
+      - 'struts2-core-([0-9.]+)\\.jar'
+      - 'struts2-core-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+---
+name: Apache Tomcat
+type: framework
+language: Java
+category: backend
+rules:
+  # 规则1：通过Tomcat配置文件检测
+  - paths:
+      - "server.xml"
+  - paths:
+      - "web.xml"
+  - paths:
+      - "context.xml"
+    file_contents: {}
+  # 规则2：通过Tomcat JAR文件检测
+  - paths:
+      - "catalina.jar"
+  - paths:
+      - "tomcat-catalina-*.jar"
+  - paths:
+      - "bootstrap.jar"
+  # 规则3：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "tomcat"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<tomcat.version>([^<]+)</tomcat.version>'
+      - '<version>.*tomcat.*</version>'
+  - file_pattern: "catalina.jar"
+    patterns:
+      - 'Apache Tomcat Version ([0-9.]+)'
+  - file_pattern: "tomcat-catalina-*.jar"
+    patterns:
+      - 'tomcat-catalina-([0-9.]+)\\.jar'
+      - 'tomcat-catalina-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+---
+name: Apache Camel
+type: framework
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "camel-core"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "camel"
+  # 规则3：通过Java文件中的Camel注解检测
+  - file_contents:
+      "*.java":
+        - "@CamelContext"
+  - file_contents:
+      "*.java":
+        - "@Route"
+  - file_contents:
+      "*.java":
+        - "@EndpointInject"
+  # 规则4：通过Camel JAR文件检测
+  - paths:
+      - "camel-core-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*camel-core.*</version>'
+      - '<camel.version>([^<]+)</camel.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'camel-core.*version="([0-9.]+)"'
+  - file_pattern: "camel-core-*.jar"
+    patterns:
+      - 'camel-core-([0-9.]+)\\.jar'
+      - 'camel-core-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'

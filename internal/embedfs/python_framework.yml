@@ -1,0 +1,149 @@
+# Python语言规则定义
+---
+name: Django
+type: framework
+language: Python
+category: backend
+rules:
+  # 规则1：通过manage.py文件检测
+  - paths:
+      - "manage.py"
+  # 规则2：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "django"
+  - file_contents:
+      Pipfile:
+        - "django"
+  # 规则3：通过wsgi.py文件检测
+  - paths:
+      - "wsgi.py"
+  # 规则4：通过Python文件中的Django特征检测
+  - file_contents:
+      "*.py":
+        - "from django."
+        - "django."
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "(?:django|Django)\\s*[>=~]=\\s*([\\d.]+)"
+      - "(?:django|Django)\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "django\\s*=\\s*[\"']([^\"']+)[\"']"
+      - "Django\\s*=\\s*[\"']([^\"']+)[\"']"
+
+---
+name: FastAPI
+type: framework
+language: Python
+category: backend
+rules:
+  # 规则1：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "fastapi"
+  - file_contents:
+      Pipfile:
+        - "fastapi"
+  # 规则2：通过main.py或app.py文件中的FastAPI实例检测
+  - file_contents:
+      main.py:
+        - "FastAPI("
+  - file_contents:
+      app.py:
+        - "FastAPI("
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "(?:fastapi|FastAPI)\\s*[>=~]=\\s*([\\d.]+)"
+      - "(?:fastapi|FastAPI)\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "fastapi\\s*=\\s*[\"']([^\"']+)[\"']"
+      - "FastAPI\\s*=\\s*[\"']([^\"']+)[\"']"
+
+---
+name: Flask
+type: framework
+language: Python
+category: backend
+rules:
+  # 规则1：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "flask"
+  - file_contents:
+      Pipfile:
+        - "flask"
+  # 规则2：通过app.py文件中的Flask实例检测
+  - file_contents:
+      app.py:
+        - "Flask("
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "(?:flask|Flask)\\s*[>=~]=\\s*([\\d.]+)"
+      - "(?:flask|Flask)\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "flask\\s*=\\s*[\"']([^\"']+)[\"']"
+      - "Flask\\s*=\\s*[\"']([^\"']+)[\"']"
+
+---
+name: Tornado
+type: framework
+language: Python
+category: backend
+rules:
+  # 规则1：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "tornado"
+  - file_contents:
+      Pipfile:
+        - "tornado"
+  # 规则2：通过Python文件中的Tornado特征检测
+  - file_contents:
+      "*.py":
+        - "import tornado"
+  - file_contents:
+      "*.py":
+        - "from tornado."
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "tornado\\s*[>=~]=\\s*([\\d.]+)"
+      - "tornado\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "tornado\\s*=\\s*[\"']([^\"']+)[\"']"
+
+---
+name: Sanic
+type: framework
+language: Python
+category: backend
+rules:
+  # 规则1：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "sanic"
+  - file_contents:
+      Pipfile:
+        - "sanic"
+  # 规则2：通过Python文件中的Sanic特征检测
+  - file_contents:
+      "*.py":
+        - "import sanic"
+  - file_contents:
+      "*.py":
+        - "from sanic."
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "sanic\\s*[>=~]=\\s*([\\d.]+)"
+      - "sanic\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "sanic\\s*=\\s*[\"']([^\"']+)[\"']"

@@ -1,0 +1,349 @@
+# JavaScript语言规则定义
+---
+name: React
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含react和react-dom
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "react"
+  # 规则2：JSX/TSX文件存在且包含React特征
+  - paths:
+      - "*.tsx"
+  - paths:
+      - "*.jsx"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"react"\s*:\s*"(\^?~?[^\"]+)"'
+
+---
+name: Express
+type: framework
+language: JavaScript
+category: backend
+rules:
+  # 规则1：package.json存在且包含express
+  - file_contents:
+      "**/package.json":
+        - "express"
+  # 规则2：server.js或app.js存在且包含express代码
+  - file_contents:
+      server.js:
+        - "require('express')"
+  - file_contents:
+      server.js:
+        - "import express from 'express'"
+  - file_contents:
+      server.js:
+        - "const app = express()"
+  - file_contents:
+      app.js:
+        - "require('express')"
+  - file_contents:
+      app.js:
+        - "import express from 'express'"
+  - file_contents:
+      app.js:
+        - "const app = express()"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"express"\s*:\s*"(\^?~?[^"]+)"'
+
+---
+name: Vue.js
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含vue
+  - file_contents:
+      "**/package.json":
+        - "vue"
+  # 规则2：vue.config.js存在
+  - paths:
+      - "vue.config.js"
+  - paths:
+      - "vite.config.ts"
+  # 规则3：src/main.js或src/main.ts存在且包含Vue特征
+  - file_contents:
+      src/main.js:
+        - "createApp"
+        - "new Vue"
+  - file_contents:
+      src/main.ts:
+        - "createApp"
+        - "new Vue"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"vue"\s*:\s*"(\^?~?[^"]+)"'
+
+---
+name: Angular
+type: framework
+language: TypeScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含@angular/core
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "@angular/core"
+  # 规则2：angular.json存在
+  - paths:
+      - "angular.json"
+    file_contents: {}
+  # 规则3：src/main.ts存在
+  - paths:
+      - "src/main.ts"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"@angular/core"\\s*:\\s*"([^"]+)"'
+
+---
+name: NestJS
+type: framework
+language: TypeScript
+category: backend
+rules:
+  # 规则1：package.json存在且包含@nestjs/core
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "@nestjs/core"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"@nestjs/core"\\s*:\\s*"([^"]+)"'
+
+---
+name: Next.js
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含next
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "next"
+  # 规则2：next.config.js或next.config.mjs存在
+  - paths:
+      - "next.config.js"
+  - paths:
+      - "next.config.mjs"
+  # 规则3：.next/目录存在
+  - paths:
+      - ".next/"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"next"\s*:\s*"(\^?~?[^"]+)"'
+
+---
+name: Nuxt.js
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含nuxt
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "nuxt"
+  # 规则2：nuxt.config.js或nuxt.config.ts存在
+  - paths:
+      - "nuxt.config.js"
+  - paths:
+      - "nuxt.config.ts"
+  # 规则3：.nuxt/目录存在
+  - paths:
+      - ".nuxt/"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"nuxt"\\s*:\\s*"([^"]+)"'
+
+---
+name: Vite
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：vite.config.js或vite.config.ts存在
+  - paths:
+      - "vite.config.js"
+  - paths:
+      - "vite.config.ts"
+  # 规则2：index.html存在且包含module脚本
+  - file_contents:
+      index.html:
+        - '<script type="module"'
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"vite"\\s*:\\s*"([^"]+)"'
+
+---
+name: Webpack
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：webpack.config.js存在
+  - paths:
+      - "webpack.config.js"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"webpack"\\s*:\\s*"([^"]+)"'
+
+---
+name: Gatsby
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：gatsby-config.js存在
+  - paths:
+      - "gatsby-config.js"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"gatsby"\\s*:\\s*"([^"]+)"'
+
+---
+name: Svelte
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：svelte.config.js存在
+  - paths:
+      - "svelte.config.js"
+    file_contents: {}
+  # 规则2：src/app.html存在
+  - paths:
+      - "src/app.html"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"svelte"\\s*:\\s*"([^"]+)"'
+
+---
+name: Strapi
+type: framework
+language: JavaScript
+category: backend
+rules:
+  # 规则1：package.json存在且包含strapi
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "strapi"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"strapi"\\s*:\\s*"([^"]+)"'
+
+---
+name: Remix
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：remix.config.js存在
+  - paths:
+      - "remix.config.js"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"remix"\\s*:\\s*"([^"]+)"'
+
+---
+name: Astro
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：astro.config.mjs存在
+  - paths:
+      - "astro.config.mjs"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"astro"\\s*:\\s*"([^"]+)"'
+
+---
+name: Ghost
+type: framework
+language: JavaScript
+category: backend
+rules:
+  # 规则1：package.json存在且包含ghost
+  - file_contents:
+      "**/package.json":
+        - "ghost"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"ghost"\\s*:\\s*"([^"]+)"'
+
+---
+name: Hydrogen
+type: framework
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：hydrogen.config.js存在
+  - paths:
+      - "hydrogen.config.js"
+    file_contents: {}
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"@shopify/hydrogen"\\s*:\\s*"([^"]+)"'
+
+---
+name: Electron
+type: framework
+language: JavaScript
+category: desktop
+rules:
+  # 规则1：package.json存在且包含electron
+  - paths:
+      - "**/package.json"
+    file_contents:
+      "**/package.json":
+        - "electron"
+  # 规则2：main.js存在且包含Electron特征
+  - file_contents:
+      main.js:
+        - "app.whenReady()"
+  - file_contents:
+      main.js:
+        - "BrowserWindow"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"electron"\\s*:\\s*"([^"]+)"'

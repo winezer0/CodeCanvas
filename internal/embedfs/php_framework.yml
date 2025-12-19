@@ -4,131 +4,235 @@ name: ThinkPHP
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["thinkphp/", "vendor/topthink/", "thinkphp.php"]
-    contains: []
-  L2:
-    paths: ["index.php"]
-    contains: ["thinkphp.php"]
-  L3:
-    paths: ["cli.php"]
-    contains: ["thinkphp.php"]
+rules:
+  # 规则1：仅路径存在 -
+  - paths:
+      - "thinkphp/"
+  - paths:
+      - "topthink/"
+  - paths:
+      - "thinkphp.php"
+  # 规则2：路径 + 文件内容联合验证 - L2级别
+  - file_contents:
+      index.php:
+        - "thinkphp.php"
+
+  # 规则3：路径 + 文件内容联合验证 - L3级别
+  - file_contents:
+      cli.php:
+        - "thinkphp.php"
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - '"topthink/thinkphp"\\s*:\\s*"([^"]+)"'
+  - file_pattern: "thinkphp/Think.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Laravel
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["artisan"]
-    contains: []
-  L2:
-    paths: ["bootstrap/app.php", "config/app.php"]
-    contains: []
-  L3:
-    paths: ["storage/logs/"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "artisan"
+
+  # 规则4：高精度验证 - 路径 + 文件内容
+  - file_contents:
+      composer.json:
+        - "laravel/framework"
+version:
+  - file_pattern: "**/composer.json"
+    patterns:
+      - '"laravel/framework"\s*:\s*"([^"]+)"'
 
 ---
 name: Yii
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["vendor/yiisoft/", "yii"]
-    contains: []
-  L2:
-    paths: ["web/index.php"]
-    contains: ["Yii::getVersion()"]
-  L3:
-    paths: ["requirements.php"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "vendor/yiisoft/"
+  - paths:
+      - "yii"
+  # 规则2：路径 + 文件内容联合验证 - L2级别
+  - file_contents:
+      index.php:
+        - "Yii::getVersion()"
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - 'yiisoft/yii2"\\s*:\\s*"([^"]+)'
+  - file_pattern: "Yii.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: WordPress
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["wp-config.php", "wp-admin/", "wp-includes/"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "wp-config.php"
+  - paths:
+      - "wp-admin/"
+  - paths:
+      - "wp-includes/"
+version:
+  - file_pattern: "wp-includes/version.php"
+    patterns:
+      - "wp_version\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Drupal
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["checker/", "sites/default/settings.php"]
-    contains: []
-  L2:
-    paths: ["CHANGELOG.txt"]
-    contains: ["Drupal"]
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "sites/default/settings.php"
+
+  # 规则2：路径 + 文件内容联合验证 - L2级别
+  - file_contents:
+      CHANGELOG.txt:
+        - "Drupal"
+version:
+  - file_pattern: "core/lib/Drupal.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
+  - file_pattern: "CHANGELOG.txt"
+    patterns:
+      - 'Drupal\\s+([\\d.]+)'
+  - file_pattern: "composer.json"
+    patterns:
+      - '"drupal/core"\\s*:\\s*"([^"]+)"'
 
 ---
 name: CodeIgniter
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["index.php"]
-    contains: ["CodeIgniter"]
+rules:
+  # 规则1：路径 + 文件内容联合验证 - L1级别
+  - file_contents:
+      index.php:
+        - "CodeIgniter"
+version:
+  - file_pattern: "system/core/CodeIgniter.php"
+    patterns:
+      - "const\\s+CI_VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
+  - file_pattern: "composer.json"
+    patterns:
+      - '"codeigniter4/framework"\\s*:\\s*"([^"]+)"'
 
 ---
 name: Slim
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["vendor/slim/slim"]
-    contains: []
-  L2:
-    paths: ["index.php"]
-    contains: ["new \\Slim\\App"]
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "vendor/slim/slim"
+
+  # 规则2：路径 + 文件内容联合验证 - L2级别
+  - file_contents:
+      index.php:
+        - 'new \\slim\App'
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - '"slim/slim"\\s*:\\s*"([^"]+)"'
+  - file_pattern: "vendor/slim/slim/Slim/App.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Laminas
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["vendor/laminas/"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "vendor/laminas/"
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - '"laminas/laminas-mvc"\\s*:\\s*"([^"]+)"'
+      - '"laminas/laminas-skeleton-application"\\s*:\\s*"([^"]+)"'
+  - file_pattern: "vendor/laminas/laminas-mvc/src/Application.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Magento
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["app/etc/config.php", "vendor/magento/"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "app/etc/config.php"
+  - paths:
+      - "vendor/magento/"
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - '"magento/product-community-edition"\\s*:\\s*"([^"]+)"'
+      - '"magento/product-enterprise-edition"\\s*:\\s*"([^"]+)"'
+  - file_pattern: "app/etc/app.php"
+    patterns:
+      - '\\$version\\s*='
+  - file_pattern: "vendor/magento/framework/Framework.php"
+    patterns:
+      - "const\\s+VERSION\\s*=\\s*[\"']([^\"']+)[\"']"
 
 ---
 name: Joomla
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["administrator/", "configuration.php"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "administrator/"
+      - "configuration.php"
+version:
+  - file_pattern: "libraries/src/Version.php"
+    patterns:
+      - "const\\s+RELEASE\\s*=\\s*[\"\"]([^\"']+)[\"']"
+  - file_pattern: "configuration.php"
+    patterns:
+      - '\\$version\\s*='
+  - file_pattern: "composer.json"
+    patterns:
+      - '"joomla/joomla-cms"\\s*:\\s*"([^"]+)"'
 
 ---
 name: PrestaShop
 type: framework
 language: PHP
 category: backend
-levels:
-  L1:
-    paths: ["config/settings.inc.php", "classes/"]
-    contains: []
+rules:
+  # 规则1：仅路径存在 - L1级别
+  - paths:
+      - "config/settings.inc.php"
+      - "classes/"
+version:
+  - file_pattern: "composer.json"
+    patterns:
+      - '"prestashop/prestashop"\\s*:\\s*"([^"]+)"'
+  - file_pattern: "config/settings.inc.php"
+    patterns:
+      - '_PS_VERSION_'
+  - file_pattern: "classes/Shop.php"
+    patterns:
+      - "const\\s+PS_VERSION\\s*=\\s*[\"']([^\"']+)[\"']"

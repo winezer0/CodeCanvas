@@ -53,31 +53,32 @@ func ToSimpleReport(report *model.CanvasReport) *model.AnalysisResult {
 		DesktopLanguages:      report.CodeProfile.DesktopLanguages,
 		FrontendLanguages:     report.CodeProfile.FrontendLanguages,
 		BackendLanguages:      report.CodeProfile.BackendLanguages,
-		Frameworks:            getUniqueItemNames(report.Detection.Frameworks),
-		Components:            getUniqueItemNames(report.Detection.Components),
+		Frameworks:            getItemsWithVersions(report.Detection.Frameworks),
+		Components:            getItemsWithVersions(report.Detection.Components),
 		MainFrontendLanguages: getTopLanguages(report.CodeProfile.FrontendLanguages, langStats, nil, 3),
 		MainBackendLanguages:  getTopLanguages(report.CodeProfile.BackendLanguages, langStats, nil, 3),
 	}
 	return result
 }
 
-// getUniqueItemNames 提取去重后的 items (组件名或者框架名)名称 列表
-func getUniqueItemNames(components []model.DetectedItem) []string {
-	seen := make(map[string]bool)
-	var languages []string
+// getItemsWithVersions 提取去重后的 items (组件名或者框架名)及其版本，返回名称到版本的映射
+func getItemsWithVersions(items []model.DetectedItem) map[string]string {
+	result := make(map[string]string)
 
-	for _, item := range components {
+	for _, item := range items {
 		name := item.Name
 		if name == "" {
-			continue // 跳过空语言（可选）
+			continue // 跳过空名称
 		}
-		if !seen[name] {
-			seen[name] = true
-			languages = append(languages, name)
+		// 如果版本为空，使用空字符串
+		version := item.Version
+		// 如果已经存在，不覆盖，保留第一个匹配的版本
+		if _, exists := result[name]; !exists {
+			result[name] = version
 		}
 	}
 
-	return languages
+	return result
 }
 
 // getTopLanguages 根据代码行数和文件数对语言进行排序并返回前 N 个

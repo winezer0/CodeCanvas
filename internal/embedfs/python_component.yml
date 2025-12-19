@@ -1,0 +1,26 @@
+# Python语言规则定义
+---
+name: requests
+type: component
+language: Python
+category: backend
+rules:
+  # 规则1：通过requirements.txt或Pipfile文件检测
+  - file_contents:
+      requirements.txt:
+        - "requests"
+  - file_contents:
+      Pipfile:
+        - "requests"
+  # 规则2：通过Python文件中的import语句检测
+  - file_contents:
+      "*.py":
+        - "import requests"
+version:
+  - file_pattern: "requirements.txt"
+    patterns:
+      - "requests\\s*[>=~]=\\s*([\\d.]+)"
+      - "requests\\s*([\\d.]+)"
+  - file_pattern: "Pipfile"
+    patterns:
+      - "requests\\s*=\\s*[\"']([^\"']+)[\"']"

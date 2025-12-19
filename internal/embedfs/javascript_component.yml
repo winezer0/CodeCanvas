@@ -1,0 +1,44 @@
+# JavaScript语言规则定义
+---
+name: lodash
+type: component
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含lodash
+  - file_contents:
+      "**/package.json":
+        - "lodash"
+  # 规则2：*.js或*.ts文件存在且包含lodash的导入或使用
+  - file_contents:
+      "*.js":
+        - "lodash"
+  - file_contents:
+      "*.ts":
+        - "lodash"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"lodash"\s*:\s*"(\^?~?[^"]+)"'
+
+---
+name: axios
+type: component
+language: JavaScript
+category: frontend
+rules:
+  # 规则1：package.json存在且包含axios
+  - file_contents:
+      "**/package.json":
+        - "axios"
+  # 规则2：*.js或*.ts文件存在且包含axios的使用
+  - file_contents:
+      "*.js":
+        - "axios"
+  - file_contents:
+      "*.ts":
+        - "axios"
+version:
+  - file_pattern: "**/package.json"
+    patterns:
+      - '"axios"\s*:\s*"(\^?~?[^"]+)"'

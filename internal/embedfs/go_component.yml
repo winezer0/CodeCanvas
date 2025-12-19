@@ -1,0 +1,53 @@
+# Golang 语言规则定义
+
+# Go语言规则定义：Wails 桌面应用框架
+
+---
+name: wails
+type: framework
+language: Go
+category: desktop
+rules:
+  # 规则1：通过go.mod文件检测
+  - file_contents:
+      go.mod:
+        - "github.com/wailsapp/wails/v2"
+  # 规则2：通过wails.json或wails.toml文件检测
+  - paths:
+      - "wails.json"
+  - paths:
+      - "wails.toml"
+  # 规则3：通过main.go或app.go文件检测
+  - file_contents:
+      main.go:
+        - "github.com/wailsapp/wails/v2"
+  - file_contents:
+      app.go:
+        - "github.com/wailsapp/wails/v2"
+version:
+  - file_pattern: "go.mod"
+    patterns:
+      - "github.com/wailsapp/wails/v2\\s+v([\\d.]+)"
+
+# Go语言规则定义：gRPC-Go
+---
+name: grpc-go
+type: component
+language: Go
+category: backend
+rules:
+  # 规则1：通过go.mod文件检测
+  - file_contents:
+      go.mod:
+        - "google.golang.org/grpc"
+  # 规则2：通过*.go文件检测
+  - file_contents:
+      "*.go":
+        - "google.golang.org/grpc"
+  - file_contents:
+      "*.go":
+        - "grpc.NewServer("
+version:
+  - file_pattern: "go.mod"
+    patterns:
+      - "google.golang.org/grpc\\s+v([\\d.]+)"

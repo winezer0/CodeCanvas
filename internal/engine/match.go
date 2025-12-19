@@ -1,201 +1,192 @@
 package engine
 
 import (
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/winezer0/codecanvas/internal/logging"
 	"github.com/winezer0/codecanvas/internal/model"
+	"github.com/winezer0/codecanvas/internal/utils"
 )
 
-// IndexMatcher 提供基于索引的文件查找功能
-type IndexMatcher struct {
-	Index *model.FileIndex
-}
-
-// NewIndexMatcher 创建一个新的索引匹配器
-func NewIndexMatcher(index *model.FileIndex) *IndexMatcher {
-	return &IndexMatcher{Index: index}
-}
-
-// FindFiles 使用索引查找匹配的文件。
-// pattern 支持:
-// 1. 精确相对路径 (e.g., "/package.json")
-// 2. 文件名匹配 (e.g., "package.json", "*.json")
-// 3. 递归通配符 (e.g., "**/*.go", "src/**/*.js")
-func (m *IndexMatcher) FindFiles(pattern string) ([]string, error) {
-	var results []string
-
-	// Case 1: 精确相对路径 (e.g. "/package.json")
-	if strings.HasPrefix(pattern, "/") {
-		target := strings.TrimPrefix(pattern, "/")
-		// 检查索引中是否存在 - 使用小写文件名作为键
-		for _, idx := range m.Index.NameMap[strings.ToLower(path.Base(target))] {
-			f := m.Index.Files[idx]
-			// 不区分大小写的路径比较
-			if strings.EqualFold(f, target) {
-				results = append(results, filepath.Join(m.Index.RootDir, f))
-			}
-		}
-		// 如果索引中找不到，但模式是绝对的，可能我们应该信任模式？
-		// 但这是基于索引的，所以我们只返回索引中的。
-		return results, nil
+// containsAllKeywords 检查文件内容是否包含所有必需的关键字。
+// 如果 ignoreCase 为 true，则进行大小写不敏感匹配；否则区分大小写。
+func containsAllKeywords(content []byte, keys []string, ignoreCase bool) bool {
+	if len(content) == 0 || len(keys) == 0 {
+		return false
 	}
 
-	// Case 2: 文件名 (e.g. "package.json")
-	// 如果不包含路径分隔符，则为简单文件名匹配
-	if !strings.Contains(pattern, "/") && !strings.Contains(pattern, "*") {
-		// 使用小写键在NameMap中查找，实现不区分大小写的匹配
-		if indices, ok := m.Index.NameMap[strings.ToLower(pattern)]; ok {
-			for _, idx := range indices {
-				results = append(results, filepath.Join(m.Index.RootDir, m.Index.Files[idx]))
-			}
-		}
-		return results, nil
-	}
-
-	// Case 3: 后缀匹配 (e.g. "*.json") - 优化
-	if strings.HasPrefix(pattern, "*.") && !strings.Contains(pattern[1:], "/") {
-		// 使用小写扩展名作为ExtensionMap的键，实现不区分大小写的后缀匹配
-		ext := strings.ToLower(pattern[1:]) // ".json"
-		if indices, ok := m.Index.ExtensionMap[ext]; ok {
-			for _, idx := range indices {
-				results = append(results, filepath.Join(m.Index.RootDir, m.Index.Files[idx]))
-			}
-		}
-		return results, nil
-	}
-
-	// Case 5: 目录匹配 (模式以 / 结尾)
-	if strings.HasSuffix(pattern, "/") {
-		// 使用小写进行比较，实现不区分大小写的目录匹配
-		patternLower := strings.ToLower(pattern)
-		for _, fileRelPath := range m.Index.Files {
-			if strings.HasPrefix(strings.ToLower(fileRelPath), patternLower) {
-				results = append(results, filepath.Join(m.Index.RootDir, fileRelPath))
-			}
-		}
-		return results, nil
-	}
-
-	// Case 4: 通用 glob 匹配 (e.g. "src/**/*.ts")
-	// 这需要遍历索引中的所有文件路径进行匹配
-	// 这是一个 O(N) 操作，其中 N 是文件总数，比磁盘 I/O 快得多。
-	for _, fileRelPath := range m.Index.Files {
-		// filepath.Match 不支持 **，我们需要支持它。
-		// 这里我们假设 pattern 遵循 gitignore 风格或 standard glob。
-		// 为了简单起见，我们使用 filepath.Match 对每部分进行匹配，或者使用正则。
-		// Go 的 filepath.Match 不支持递归 **。
-		// 为了支持 **，我们可以使用第三方库，或者简单的实现：
-		// 如果 pattern 包含 **，我们将 ** 替换为 .* 并使用正则。
-
-		matched, err := matchPath(pattern, fileRelPath)
-		if err == nil && matched {
-			results = append(results, filepath.Join(m.Index.RootDir, fileRelPath))
+	contentStr := string(content)
+	if ignoreCase {
+		contentStr = strings.ToLower(contentStr)
+		for i, kw := range keys {
+			keys[i] = strings.ToLower(kw)
 		}
 	}
 
-	return results, nil
-}
-
-// matchPath 简单的路径匹配，支持 **
-func matchPath(pattern, name string) (bool, error) {
-	// 确保模式使用正斜杠以匹配 FileIndex 约定
-	pattern = filepath.ToSlash(pattern)
-
-	// 简单的 ** 支持
-	if strings.Contains(pattern, "**") {
-		// 转义 .
-		regexPat := strings.ReplaceAll(pattern, ".", "\\.")
-		// 替换 * 为 [^/]*
-		regexPat = strings.ReplaceAll(regexPat, "*", "[^/]*")
-		// 修复 **: 之前被替换成了 [^/]*[^/]*，我们需要 .*
-		// 但这有点复杂。
-		// 让我们简化策略：如果包含 **，我们暂时退化为简单的包含检查或者正则。
-		// 更好的做法是：
-		// 1. 将 pattern 分段
-		// 2. 将 name 分段
-		// 3. 匹配
-
-		// 考虑到时间限制，我们使用一个简单的正则转换：
-		// 1. QuoteMeta 转义特殊字符
-		// 2. 将 \* 替换为 [^/]* (非路径分隔符的任意字符)
-		// 3. 将 \*\* 替换为 .* (任意字符)
-		// 4. 添加 i 标志使正则不区分大小写
-
-		// 重置
-		regexPat = regexp.QuoteMeta(pattern)
-		regexPat = strings.ReplaceAll(regexPat, "\\*\\*", ".*")
-		regexPat = strings.ReplaceAll(regexPat, "\\*", "[^/]*")
-		regexPat = "^" + regexPat + "$"
-
-		// 使用不区分大小写的正则匹配
-		return regexp.MatchString("(?i:"+regexPat+")", name)
-	}
-
-	// 对于非 ** 模式，将 pattern 和 name 都转换为小写后再匹配
-	return path.Match(strings.ToLower(pattern), strings.ToLower(name))
-}
-
-// containsAllKeywords 检查文件是否包含所有必需的关键字。
-// 优化：流式读取，避免加载大文件。
-func containsAllKeywords(content []byte, keywords []string) bool {
-	if len(keywords) == 0 {
-		return true
-	}
-
-	contentText := string(content)
-	for _, kw := range keywords {
-		if !strings.Contains(contentText, kw) {
+	for _, kw := range keys {
+		if !strings.Contains(contentStr, kw) {
 			return false
 		}
 	}
 	return true
 }
 
-// extractVersionFromText 使用给定的正则表达式模式从文件内容中提取版本字符串。
-func extractVersionFromText(content []byte, pattern string) string {
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return ""
+// extractVersion 使用给定的正则表达式列表从文件内容中提取版本号
+// 按顺序尝试每个正则表达式，第一个成功匹配且包含捕获组的结果将被用作版本号
+func extractVersion(content []byte, patterns []string) string {
+	for _, pattern := range patterns {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			continue
+		}
+		matches := re.FindSubmatch(content)
+		if len(matches) > 1 {
+			return string(matches[1])
+		}
 	}
-
-	matches := re.FindSubmatch(content)
-	if len(matches) < 2 {
-		return ""
-	}
-
-	return string(matches[1])
+	return ""
 }
 
-// extractVersionFromPath 使用给定的正则表达式模式从文件路径中提取版本字符串。
-func extractVersionFromPath(filePath, pattern string) string {
-	// 确保路径分隔符统一
-	filePath = filepath.ToSlash(filePath)
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return ""
+// matchFrame 检查 rules 中是否有任意一条规则被满足。
+// 规则满足条件 = 所有 Paths 存在 AND 所有 FileContents 条件满足。
+// 返回 true 表示至少有一条规则匹配成功。
+func matchFrame(matcher *IndexMatcher, rules []model.Rule, fileContentCache map[string][]byte) bool {
+	for _, rule := range rules {
+		if len(rule.Paths) == 0 && len(rule.FileContents) == 0 {
+			logging.Errorf("match rules not has any match content: %s", utils.ToJson(rule))
+			continue
+		}
+
+		// 1. 检查 Paths（所有路径必须存在，AND）
+		pathsMatch := true // 假设全部存在
+		if len(rule.Paths) > 0 {
+			// 如果 Paths 不为空 需要先匹配paths列表 判断需要的文件路径是否都存在
+			for _, path := range rule.Paths {
+				matches, _ := matcher.FindFiles(filepath.ToSlash(path))
+				if len(matches) == 0 {
+					pathsMatch = false
+					break // 存在path缺失即失败
+				}
+			}
+
+			// 如果 Paths 不满足，跳过此规则
+			if !pathsMatch {
+				continue
+			}
+		}
+
+		// 2. 检查 FileContents（每个 pattern 必须有至少一个文件包含其所有关键字，AND across patterns）
+		fileMatch := true // 假设全部满足
+		if len(rule.FileContents) > 0 {
+			for filePattern, fileKeys := range rule.FileContents {
+				findFiles, _ := matcher.FindFiles(filePattern)
+				if len(findFiles) == 0 {
+					fileMatch = false
+					break // 没有文件匹配此 pattern，失败
+				}
+
+				// 检查是否存在至少一个文件包含所有关键字
+				oneFileMatches := false
+				for _, path := range findFiles {
+					content, err := GetFileContentWithCache(path, fileContentCache)
+					if err != nil {
+						continue
+					}
+					if containsAllKeywords(content, fileKeys, true) {
+						oneFileMatches = true
+						break
+					}
+				}
+
+				if !oneFileMatches {
+					fileMatch = false
+					break // 此 pattern 无文件满足，失败
+				}
+				// 否则继续检查下一个 pattern
+			}
+		}
+
+		// 如果当前规则完全匹配（Paths + FileContents），立即返回 true
+		if pathsMatch && fileMatch {
+			return true
+		}
 	}
 
-	matches := re.FindStringSubmatch(filePath)
-	if len(matches) < 2 {
-		return ""
-	}
-
-	return matches[1]
+	// 所有规则都不匹配
+	return false
 }
 
-// mapConfidenceLevel 将规则级别映射到置信度字符串。
-func mapConfidenceLevel(level string) string {
-	switch level {
-	case "L1":
-		return model.ConfidenceHigh
-	case "L2":
-		return model.ConfidenceMedium
-	case "L3":
-		return model.ConfidenceLow
-	default:
-		return model.ConfidenceLow
+func extractorVersion(matcher *IndexMatcher, versionExtractors []model.VersionExtractor, fileContentCache map[string][]byte) string {
+	version := ""
+	// 使用框架/组件级版本提取规则
+	for _, versionExtractor := range versionExtractors {
+		// 找到所有匹配该模式的文件
+		findFiles, _ := matcher.FindFiles(versionExtractor.FilePattern)
+		if len(findFiles) == 0 {
+			// 没有匹配的文件，跳过此提取规则
+			continue
+		}
+
+		// 检查所有匹配的文件，直到找到版本号
+		for _, path := range findFiles {
+			content, err := GetFileContentWithCache(path, fileContentCache)
+			if err != nil {
+				// 无法读取文件，尝试下一个文件
+				continue
+			}
+
+			// 按顺序尝试每个正则表达式，直到找到匹配的版本号
+			for _, pattern := range versionExtractor.Patterns {
+				// 使用正则表达式提取版本号
+				re, err := regexp.Compile(pattern)
+				if err != nil {
+					// 正则表达式无效，尝试下一个
+					continue
+				}
+
+				matches := re.FindSubmatch(content)
+				if len(matches) > 1 {
+					// 找到匹配 并格式化版本号
+					version = formatVersion(string(matches[1]))
+					if len(version) > 0 {
+						// 停止遍历匹配方法
+						break
+					}
+				}
+			}
+
+			// 如果从文件内容未找到版本号，尝试从文件名提取
+			for _, pattern := range versionExtractor.Patterns {
+				// 使用正则表达式从文件名提取版本号
+				re, err := regexp.Compile(pattern)
+				if err != nil {
+					// 正则表达式无效，尝试下一个
+					continue
+				}
+
+				matches := re.FindStringSubmatch(path)
+				if len(matches) > 1 {
+					// 找到匹配 并 格式化版本号，去除 ^、~、= 等前缀和空格
+					version = formatVersion(matches[1])
+					if len(version) > 0 {
+						// 停止遍历匹配方法
+						break
+					}
+				}
+			}
+
+			// 如果找到版本号，停止遍历
+			if len(version) > 0 {
+				break
+			}
+		}
+
+		// 如果找到版本号，停止遍历
+		if len(version) > 0 {
+			break
+		}
 	}
+	return version
 }

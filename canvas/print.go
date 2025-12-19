@@ -2,9 +2,10 @@ package canvas
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/winezer0/codecanvas/internal/model"
 	"github.com/winezer0/codecanvas/internal/utils"
-	"time"
 )
 
 // PrintReport outputs the analysis report in text format.
@@ -99,9 +100,6 @@ func PrintCategoryItems(category string, items []model.DetectedItem) {
 			fmt.Printf("  - %s (%s)\n", item.Name, item.Language)
 			if item.Version != "" {
 				fmt.Printf("    Version: %s\n", item.Version)
-			}
-			if item.Confidence != "" {
-				fmt.Printf("    Confidence: %s\n", item.Confidence)
 			}
 			if item.Evidence != "" {
 				fmt.Printf("    Evidence: %s\n", item.Evidence)

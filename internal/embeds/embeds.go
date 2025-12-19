@@ -12,14 +12,14 @@ import (
 
 // EmbeddedCanvas returns the default set of framework and component detection rules.
 // Rules are embedded in the binary using the embed package and loaded from YAML files.
-func EmbeddedCanvas() []*model.FrameworkRuleDefinition {
-	var allRules []*model.FrameworkRuleDefinition
+func EmbeddedCanvas() []*model.Framework {
+	var allRules []*model.Framework
 
 	// Read all files from the embedded filesystem
 	files, err := fs.Glob(embedfs.CanvasEmbedFS, "*.yml")
 	if err != nil {
 		// Should not happen in a valid build
-		return []*model.FrameworkRuleDefinition{}
+		return []*model.Framework{}
 	}
 
 	for _, filename := range files {
@@ -29,7 +29,7 @@ func EmbeddedCanvas() []*model.FrameworkRuleDefinition {
 		}
 
 		// Try to parse as single-document array format first
-		var rulesArray []*model.FrameworkRuleDefinition
+		var rulesArray []*model.Framework
 		if err := yaml.Unmarshal(fileContent, &rulesArray); err == nil {
 			// Check if we actually got something valid (array of structs)
 			// yaml.Unmarshal might succeed with empty array or zero values
@@ -44,7 +44,7 @@ func EmbeddedCanvas() []*model.FrameworkRuleDefinition {
 		decoder := yaml.NewDecoder(yamlReader)
 
 		for {
-			var rule model.FrameworkRuleDefinition
+			var rule model.Framework
 			if err := decoder.Decode(&rule); err != nil {
 				if err == io.EOF {
 					break

@@ -3,11 +3,12 @@ package engine
 import (
 	"context"
 	"fmt"
-	"github.com/winezer0/codecanvas/internal/model"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/winezer0/codecanvas/internal/model"
 )
 
 // TestEmbeddedRules verifies that every embedded rule can be triggered by a minimal test case.
@@ -22,8 +23,8 @@ func TestEmbeddedRules(t *testing.T) {
 		t.Fatal("No rules loaded from embedded assets")
 	}
 
-	for _, rule := range e.rules {
-		t.Run(fmt.Sprintf("%s-%s", rule.Language, rule.Name), func(t *testing.T) {
+	for _, framework := range e.rules {
+		t.Run(fmt.Sprintf("%s-%s", framework.Language, framework.Name), func(t *testing.T) {
 			// Create a temp directory for this rule
 			tmpDir, err := os.MkdirTemp("", "rule_test_*")
 			if err != nil {
@@ -32,14 +33,14 @@ func TestEmbeddedRules(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			// Setup test environment based on the rule
-			if !setupTestEnv(t, tmpDir, rule) {
-				t.Skipf("Skipping rule %s: could not setup test environment (complex rule?)", rule.Name)
+			if !setupTestEnv(t, tmpDir, framework) {
+				t.Skipf("Skipping rule %s: could not setup test environment (complex rule?)", framework.Name)
 			}
 
 			// Run detection
 			ctx := context.Background()
 			// We must provide the language the rule expects, otherwise it might skip
-			languages := []string{rule.Language}
+			languages := []string{framework.Language}
 
 			// Build file index
 			index, err := buildTestIndex(tmpDir)
@@ -55,38 +56,21 @@ func TestEmbeddedRules(t *testing.T) {
 			// Verify detection
 			found := false
 			var items []model.DetectedItem
-			if rule.Type == "framework" {
+			if framework.Type == "framework" {
 				items = result.Frameworks
 			} else {
 				items = result.Components
 			}
 
 			for _, item := range items {
-				if item.Name == rule.Name {
+				if item.Name == framework.Name {
 					found = true
 					break
 				}
 			}
 
 			if !found {
-				// 重新提取 level 用于日志记录
-				var level *model.RuleSet
-				if l, ok := rule.Levels["L1"]; ok {
-					level = l
-				} else if l, ok := rule.Levels["L2"]; ok {
-					level = l
-				} else if l, ok := rule.Levels["L3"]; ok {
-					level = l
-				}
-
-				paths := []string{}
-				contains := []string{}
-				if level != nil {
-					paths = level.Paths
-					contains = level.Contains
-				}
-
-				t.Errorf("Rule %s was not detected. Created files in %s. Paths: %v. Contains: %v", rule.Name, tmpDir, paths, contains)
+				t.Errorf("Framework %s was not detected. Created files in %s. Total rules: %d", framework.Name, tmpDir, len(framework.Rules))
 			}
 		})
 	}
@@ -94,76 +78,85 @@ func TestEmbeddedRules(t *testing.T) {
 
 // setupTestEnv creates files in the temp dir to satisfy the rule.
 // Returns true if setup was successful, false if the rule is too complex to auto-mock.
-func setupTestEnv(t *testing.T, dir string, rule *model.FrameworkRuleDefinition) bool {
-	// Prefer L1, then L2, then L3
-	var level *model.RuleSet
-	if l, ok := rule.Levels["L1"]; ok {
-		level = l
-	} else if l, ok := rule.Levels["L2"]; ok {
-		level = l
-	} else if l, ok := rule.Levels["L3"]; ok {
-		level = l
-	} else {
+func setupTestEnv(t *testing.T, dir string, framework *model.Framework) bool {
+	// 如果没有规则，返回 false
+	if len(framework.Rules) == 0 {
 		return false
 	}
 
-	if len(level.Paths) == 0 {
-		return false
-	}
+	// 取第一条规则作为测试目标
+	rule := framework.Rules[0]
 
-	// Pick the first path
-	pathPattern := level.Paths[0]
+	// 处理 Paths
+	if len(rule.Paths) > 0 {
+		// 对每条路径创建对应的文件或目录
+		for _, pathPattern := range rule.Paths {
+			filename := pathPattern
 
-	// Handle globs roughly - just pick a simple filename that matches
-	filename := pathPattern
+			// 如果模式以 / 结尾，它期望目录存在。
+			// 在其中创建一个文件以便被索引。
+			if strings.HasSuffix(pathPattern, "/") {
+				filename = pathPattern + "index.php"
+			} else if pathPattern == "*.go" {
+				filename = "main.go"
+			} else if pathPattern == "*.js" {
+				filename = "index.js"
+			} else if pathPattern == "*.json" {
+				filename = "package.json"
+			} else if pathPattern == "*.php" {
+				filename = "index.php"
+			} else if pathPattern == "*.py" {
+				filename = "app.py"
+			} else if pathPattern == "pom.xml" {
+				filename = "pom.xml"
+			} else if pathPattern == "go.mod" {
+				filename = "go.mod"
+			} else if strings.Contains(pathPattern, "*") {
+				// Replace * with something concrete
+				filename = strings.ReplaceAll(pathPattern, "*", "test_file")
+			}
 
-	// 如果模式以 / 结尾，它期望目录存在。
-	// 在其中创建一个文件以便被索引。
-	if strings.HasSuffix(pathPattern, "/") {
-		filename = pathPattern + "index.php"
-	} else if pathPattern == "*.go" {
-		filename = "main.go"
-	} else if pathPattern == "*.js" {
-		filename = "index.js"
-	} else if pathPattern == "*.json" {
-		filename = "package.json"
-	} else if pathPattern == "*.php" {
-		filename = "index.php"
-	} else if pathPattern == "*.py" {
-		filename = "app.py"
-	} else if pathPattern == "pom.xml" {
-		filename = "pom.xml"
-	} else if pathPattern == "go.mod" {
-		filename = "go.mod"
-	} else if strings.Contains(pathPattern, "*") {
-		// Replace * with something concrete
-		filename = strings.ReplaceAll(pathPattern, "*", "test_file")
-	}
+			// Create the file
+			fullPath := filepath.Join(dir, filename)
+			if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+				t.Errorf("Failed to create dirs: %v", err)
+				return false
+			}
 
-	// Construct content
-	content := ""
-	if len(level.Contains) > 0 {
-		// Just concatenate all required strings
-		for _, s := range level.Contains {
-			content += s + "\n"
+			// 如果是文件，写入空内容
+			if !strings.HasSuffix(filename, "/") {
+				if err := os.WriteFile(fullPath, []byte(""), 0644); err != nil {
+					t.Errorf("Failed to write file: %v", err)
+					return false
+				}
+			}
 		}
-	} else if level.ExtractVersionFromText != nil && level.ExtractVersionFromText.Pattern != "" {
-		// This is harder to mock automatically without regex reversing
-		// But usually Contains is also present or we can try to guess.
-		// For now, if Contains is empty but regex is there, we might fail.
-		// But most rules have Contains.
 	}
 
-	// Create the file
-	fullPath := filepath.Join(dir, filename)
-	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
-		t.Errorf("Failed to create dirs: %v", err)
-		return false
-	}
+	// 处理 FileContents
+	if len(rule.FileContents) > 0 {
+		// 对每个文件创建对应的文件并写入内容
+		for filePath, keywords := range rule.FileContents {
+			// Create the file
 
-	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
-		t.Errorf("Failed to write file: %v", err)
-		return false
+			fullPath := filepath.Join(dir, strings.ReplaceAll(filePath, "*", "_"))
+			if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+				t.Errorf("Failed to create dirs: %v", err)
+				return false
+			}
+
+			// Construct content
+			content := ""
+			// Just concatenate all required strings
+			for _, s := range keywords {
+				content += s + "\n"
+			}
+
+			if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+				t.Errorf("Failed to write file: %v", err)
+				return false
+			}
+		}
 	}
 
 	return true

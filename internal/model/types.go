@@ -39,10 +39,10 @@ type AnalysisResult struct {
 	MainBackendLanguages []string `json:"main_backend_languages"`
 	// 主要前端语言列表 (Top 3)
 	MainFrontendLanguages []string `json:"main_frontend_languages"`
-	// 框架信息列表
-	Frameworks []string `json:"frameworks"`
-	// 组件信息列表
-	Components []string `json:"components"`
+	// 框架信息列表，名称到版本的映射
+	Frameworks map[string]string `json:"frameworks"`
+	// 组件信息列表，名称到版本的映射
+	Components map[string]string `json:"components"`
 }
 
 type CodeProfile struct {
@@ -98,29 +98,32 @@ type ComponentMetadata struct {
 	Levels   map[string]string `json:"levels"` // 例如: {"L1": "pom.xml", "L2": "Application.java"}
 }
 
-// FrameworkRuleDefinition 内部规则模型（对应 YAML 规则文件） 定义了如何检测框架或组件。 在启动时从 YAML 规则文件中加载。
-type FrameworkRuleDefinition struct {
-	Name     string              `yaml:"name"`
-	Type     string              `yaml:"type"` // "framework" or "component"
-	Language string              `yaml:"language"`
-	Category string              `yaml:"category"` // 针对框架: "frontend"/"backend"; 针对组件: "frontend"/"backend"
-	Levels   map[string]*RuleSet `yaml:"levels"`   // 键: "L1", "L2", "L3"
+// Rule 匹配组件/框架的信息 判断组件或框架是否存在
+type Rule struct {
+	// Paths: 必须存在的路径（文件或目录），全部都要存在
+	Paths []string `yaml:"paths,omitempty"`
+
+	// FileContents: 文件路径 -> 必须包含的关键字列表
+	// 每个文件必须存在，且内容包含所有对应的关键字
+	FileContents map[string][]string `yaml:"file_contents,omitempty"`
 }
 
-// RuleSet 针对一个检测级别，提供了组文件路径、内容关键词以及版本提取逻辑。
-type RuleSet struct {
-	Paths []string `yaml:"paths"`
-	// 可选: "contains" 中的所有字符串必须出现在文件内容中（逻辑与）
-	Contains []string `yaml:"contains,omitempty"`
-	// 可选: 使用正则表达式从文件内容中提取版本
-	ExtractVersionFromText *VersionExtractor `yaml:"extract_version_from_text,omitempty"`
-	// 可选: 使用正则表达式从匹配的文件路径中提取版本
-	ExtractVersionFromPath *VersionExtractor `yaml:"extract_version_from_path,omitempty"`
-}
-
-// VersionExtractor 定义了一个正则表达式模式，用于提取版本字符串 此模式必须包含一个捕获组；第一个组将用作版本号。
+// VersionExtractor 表示一条完整的版本提取规则
 type VersionExtractor struct {
-	Pattern string `yaml:"pattern"`
+	// FilePattern: 匹配的文件模式
+	FilePattern string   `yaml:"file_pattern"` // 匹配的文件模式
+	// Patterns: 版本提取正则表达式列表
+	Patterns    []string `yaml:"patterns"`     // 版本提取正则表达式列表
+}
+
+// Framework 内部规则模型（对应 YAML 规则文件）定义了如何检测框架或组件。在启动时从 YAML 规则文件中加载。
+type Framework struct {
+	Name     string             `yaml:"name"`
+	Type     string             `yaml:"type"` // "framework" or "component"
+	Language string             `yaml:"language"`
+	Category string             `yaml:"category"` // 针对框架: "frontend"/"backend"; 针对组件: "frontend"/"backend"
+	Rules    []Rule             `yaml:"rules"`    // 多条规则，OR 关系
+	Versions []VersionExtractor `yaml:"version"`  // 多条版本提取表达式，OR 关系
 }
 
 // CanvasReport 最终分析报告

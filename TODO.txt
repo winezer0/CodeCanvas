@@ -1,5 +1,5 @@
 TODO
-1 重构规则结构,取消可信度设计,只保留高可信度的规则
+1 重构规则结构 ,取消可信度设计 
 name: ThinkPHP
 type: framework
 language: PHP
@@ -16,25 +16,143 @@ levels:
     contains: ["thinkphp.php"]
 
 修改为
+
+// Rule 表示一条完整的检测规则
+type Rule struct {
+    // Paths: 必须存在的路径（文件或目录），全部都要存在
+    Paths []string `yaml:"paths,omitempty"`
+
+    // FileContents: 文件路径 -> 必须包含的关键字列表
+    // 每个文件必须存在，且内容包含所有对应的关键字
+    FileContents map[string][]string `yaml:"file_contents,omitempty"`
+}
+
+// Framework 整体定义
+type Framework struct {
+    Name     string `yaml:"name"`
+    Type     string `yaml:"type"`
+    Language string `yaml:"language"`
+    Category string `yaml:"category"`
+    Rules    []Rule `yaml:"rules"` // 多条规则，OR 关系
+}
+
+注意事项
+路径分隔符：建议在解析时统一转为 /，避免 Windows \ 问题；
+关键字顺序无关：匹配是“包含”关系，非顺序匹配；
+大小写不敏感：
+
+
+示例：高精度 Laravel 识别（对比）
+- paths:
+    - "artisan"
+    - "bootstrap/app.php"
+  file_contents:
+    composer.json:
+      - "laravel/framework"
+    public/index.php:
+      - "require __DIR__.'/../vendor/autoload.php';"
+      - "$app = require_once __DIR__.'/../bootstrap/app.php';"
+
+新版规则中各组成部分之间逻辑关系的清晰文字描述：
+1. paths 之间的关系
+逻辑关系：与（AND）
+含义：
+paths 列表中的每一个路径（可以是目录或文件）都必须存在于目标系统中。
+只要其中任意一个路径不存在，该规则即不匹配。
+示例：
+paths:
+  - "thinkphp/"
+  - "public/"
+→ 要求 thinkphp/ 和 public/ 同时存在。
+
+2. file_contents 之间的关系
+逻辑关系：与（AND）
+含义：
+file_contents 中的每一个文件条目都必须满足其对应的内容要求：
+该文件必须存在；
+其内容必须包含该条目下所有指定的关键字（关键字之间也是 AND 关系）。
+只要任意一个文件缺失，或其内容缺少任一关键字，该规则即不匹配。
+示例：
+file_contents:
+  index.php:
+    - "thinkphp.php"
+    - "namespace app;"
+  cli.php:
+    - "php think"
+→ 要求：
+index.php 存在且同时包含 "thinkphp.php" 和 "namespace app;"； 并且 cli.php 存在且包含 "php think"。
+
+3. paths 与 file_contents 之间的关系
+逻辑关系：与（AND）
+含义：
+如果一条规则中同时定义了 paths 和 file_contents，则必须：
+所有 paths 中的路径都存在；
+并且 所有 file_contents 中的文件及其内容要求都满足。
+两者缺一不可。
+
+示例：
+paths:
+  - "thinkphp/"
+file_contents:
+  index.php:
+    - "thinkphp.php"
+→ 要求：thinkphp/ 目录存在 且 index.php 存在并包含 "thinkphp.php"。
+
+4. file_contents 为空时，paths 的处理
+若 file_contents 未定义或为空（即只包含 paths）：
+仅检查 paths 中的所有路径是否存在；
+不进行任何文件内容检测；
+只要所有 paths 存在，该规则即匹配成功。
+用途：适用于通过目录结构即可高置信识别的场景（如唯一性框架目录）。
+
+5. paths 为空时，file_contents 的处理
+若 paths 未定义或为空（即只包含 file_contents）：
+仅检查 file_contents 中指定的每个文件是否存在，且内容是否满足要求；
+不额外检查其他路径；
+所有文件及其内容均满足时，该规则匹配成功。
+用途：适用于无固定目录结构、但关键文件特征明显的场景（如通过 composer.json 识别）。
+
+6. paths 和 file_contents 都不为空时的处理
+必须同时满足以下两个条件：
+paths 列表中的所有路径（文件或目录）都存在；
+file_contents 中的每一个文件都存在，且其内容包含对应的所有关键字。
+两者构成一个完整的联合判据，共同决定该规则是否匹配。
+这是最高精度的识别方式，可有效避免误报（例如防止仅因存在 index.php 就误判为 ThinkPHP）。
+
+在新版规则体系中，多个规则（rules）之间的关系是：逻辑“或”（OR）关系。
+详细描述：
+一个框架（如 ThinkPHP）的识别定义包含 一个或多个独立的规则（Rule）；
+只要其中任意一条规则匹配成功，即判定目标系统使用了该框架；
+各规则之间相互独立、互不影响，无需同时满足；
+规则的顺序通常不影响最终结果（但可优化性能：将高置信、低成本的规则放前面）。
+
+完整的规则示例：
 name: ThinkPHP
 type: framework
 language: PHP
 category: backend
 rules:
-    paths: ["thinkphp/"]
-    contains: []
+  # 规则1：仅路径存在
+  - paths:
+      - "thinkphp/"
 
-    paths: ["vendor/topthink/"]
-    contains: []
+  # 规则2：路径 + 多文件内容联合验证
+  - paths:
+      - "thinkphp/"
+      - "vendor/topthink/framework/"
+    file_contents:
+      index.php:
+        - "thinkphp.php"
+        - "namespace app;"
+      cli.php:
+        - "thinkphp.php"
+        - "php think"
 
-    paths: ["thinkphp.php"]
-    contains: []
+  # 规则3：仅文件内容（无额外路径）
+  - file_contents:
+      composer.json:
+        - "topthink/framework"
+        - "\"version\":"
 
-    paths: ["index.php"]
-    contains: ["thinkphp.php"]
-
-    paths: ["cli.php"]
-    contains: ["thinkphp.php"]
-多条规则之间是或者关系，同一个规则之间的paths/contains是与关系
 
 2 优化语言分类设置，将语言规则也改为配置文件格式 并写出到yml配置文件

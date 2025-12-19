@@ -1,70 +1,169 @@
 # Java语言规则定义
 ---
-name: log4j-checker
+name: log4j
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["log4j-checker"]
-    extract_version_from_text:
-      pattern: '<artifactId>log4j-checker</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["log4j-checker-*.jar"]
-    extract_version_from_path:
-      pattern: 'log4j-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "log4j"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "log4j"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "log4j2-*.jar"
+  - paths:
+      - "log4j-core-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*log4j.*</version>'
+      - '<log4j.version>([^<]+)</log4j.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'log4j.*version="([0-9.]+)"'
+  - file_pattern: "log4j-*.jar"
+    patterns:
+      - 'log4j-([0-9.]+)\\.jar'
+      - 'log4j-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "log4j2-*.jar"
+    patterns:
+      - 'log4j2-([0-9.]+)\\.jar'
+      - 'log4j2-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+      - 'log4j-core-([0-9.]+)\\.jar'
 
-
-# Java语言规则定义
 ---
 name: fastjson
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["fastjson"]
-    extract_version_from_text:
-      pattern: '<artifactId>fastjson</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["fastjson-*.jar"]
-    extract_version_from_path:
-      pattern: 'fastjson-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "com.alibaba.fastjson"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "com.alibaba.fastjson"
+  # 规则3：通过Java文件中使用fastjson检测
+  - file_contents:
+      "*.java":
+        - "com.alibaba.fastjson"
+  - file_contents:
+      "**/*.java":
+        - "com.alibaba.fastjson"
+  # 规则4：通过fastjson配置文件检测
+  - paths:
+      - "fastjson.xml"
+  - paths:
+      - "fastjson.properties"
+  # 规则5：通过jar文件检测
+  - paths:
+      - "fastjson-*.jar"
+  - paths:
+      - "com.alibaba.fastjson-*.jar"
 
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*fastjson.*</version>'
+      - '<fastjson.version>([^<]+)</fastjson.version>'
+      - '<dependency>\\s*<groupId>com\\.alibaba</groupId>\\s*<artifactId>fastjson</artifactId>\\s*<version>([^<]+)</version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'fastjson.*version="([0-9.]+)"'
+      - "fastjson.*version='([0-9.]+)'"
+      - 'com\\.alibaba\\.fastjson.*version="([0-9.]+)"'
+  - file_pattern: "*.java"
+    patterns:
+      - 'fastjson-(\\d+\\.\\d+\\.\\d+)'
+  - file_pattern: "fastjson-*.jar"
+    patterns:
+      - 'fastjson-(\\d+\\.\\d+\\.\\d+)\\.jar'
+      - 'fastjson-([0-9.]+)\\.jar'
+      - 'fastjson-(\\d+\\.\\d+\\.\\d+)-[a-zA-Z0-9.-]+\\.jar'
+  - file_pattern: "com.alibaba.fastjson-*.jar"
+    patterns:
+      - 'com\\.alibaba\\.fastjson-(\\d+\\.\\d+\\.\\d+)\\.jar'
+      - 'com\\.alibaba\\.fastjson-([0-9.]+)\\.jar'
 
 ---
 name: mysql-connector-java
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["mysql-connector-java"]
-    extract_version_from_text:
-      pattern: '<artifactId>mysql-connector-java</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["mysql-connector-java-*.jar", "mysql-connector-j-*.jar"]
-    extract_version_from_path:
-      pattern: 'mysql-connector-(?:java|j)-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "mysql-connector-j"
+  - file_contents:
+      pom.xml:
+        - "mysql-connector-java"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "mysql-connector-j"
+  - file_contents:
+      build.xml:
+        - "mysql-connector-java"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "mysql-connector-java-*.jar"
+  - paths:
+      - "mysql-connector-j-*.jar"
+
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*mysql-connector-java.*</version>'
+      - '<version>.*mysql-connector-j.*</version>'
+      - '<mysql.version>([^<]+)</mysql.version>'
+      - '<mysql-connector-java.version>([^<]+)</mysql-connector-java.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'mysql-connector-.*version="([0-9.]+)"'
+  - file_pattern: "mysql-connector-java-*.jar"
+    patterns:
+      - 'mysql-connector-java-([0-9.]+)\\.jar'
+  - file_pattern: "mysql-connector-j-*.jar"
+    patterns:
+      - 'mysql-connector-j-([0-9.]+)\\.jar'
 
 ---
 name: postgresql
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["postgresql"]
-    extract_version_from_text:
-      pattern: '<artifactId>postgresql</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["postgresql-*.jar"]
-    extract_version_from_path:
-      pattern: 'postgresql-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "postgresql"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "postgresql"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "postgresql-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*postgresql.*</version>'
+      - '<postgresql.version>([^<]+)</postgresql.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'postgresql.*version="([0-9.]+)"'
+  - file_pattern: "postgresql-*.jar"
+    patterns:
+      - 'postgresql-([0-9.]+)\\.jar'
+      - 'postgresql-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
 # Apache Commons Collections（CC 链核心）
 ---
@@ -72,17 +171,30 @@ name: commons-collections
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["commons-collections"]
-    extract_version_from_text:
-      pattern: '<artifactId>commons-collections</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["commons-collections-*.jar"]
-    extract_version_from_path:
-      pattern: 'commons-collections-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
-
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "commons-collections"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "commons-collections"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "commons-collections-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*commons-collections.*</version>'
+      - '<commons-collections.version>([^<]+)</commons-collections.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'commons-collections.*version="([0-9.]+)"'
+  - file_pattern: "commons-collections-*.jar"
+    patterns:
+      - 'commons-collections-([0-9.]+)\\.jar'
+      - 'commons-collections-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
 # Apache Commons BeanUtils（CB 链核心）
 ---
@@ -90,16 +202,30 @@ name: commons-beanutils
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["commons-beanutils"]
-    extract_version_from_text:
-      pattern: '<artifactId>commons-beanutils</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["commons-beanutils-*.jar"]
-    extract_version_from_path:
-      pattern: 'commons-beanutils-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "commons-beanutils"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "commons-beanutils"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "commons-beanutils-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*commons-beanutils.*</version>'
+      - '<commons-beanutils.version>([^<]+)</commons-beanutils.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'commons-beanutils.*version="([0-9.]+)"'
+  - file_pattern: "commons-beanutils-*.jar"
+    patterns:
+      - 'commons-beanutils-([0-9.]+)\\.jar'
+      - 'commons-beanutils-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
 # ROME（RSS/Atom 解析库，ROME 链）
 ---
@@ -107,70 +233,171 @@ name: rome
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["rome</artifactId>", "com.sun.syndication"]
-    extract_version_from_text:
-      pattern: '<artifactId>rome</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["rome-*.jar"]
-    extract_version_from_path:
-      pattern: 'rome-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "rome</artifactId>"
+  - file_contents:
+      pom.xml:
+        - "com.sun.syndication"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "rome"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "rome-*.jar"
 
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*rome.*</version>'
+      - '<rome.version>([^<]+)</rome.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'rome.*version="([0-9.]+)"'
+  - file_pattern: "rome-*.jar"
+    patterns:
+      - 'rome-([0-9.]+)\\.jar'
+      - 'rome-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
-#Groovy（Groovy 链，常用于 Jenkins RCE）
+# Groovy（Groovy 链，常用于 Jenkins RCE）
 ---
 name: groovy
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["groovy</artifactId>"]
-    extract_version_from_text:
-      pattern: '<artifactId>groovy</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["groovy-*.jar", "groovy-all-*.jar"]
-    extract_version_from_path:
-      pattern: 'groovy(?:-all)?-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "groovy</artifactId>"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "groovy"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "groovy-*.jar"
+  - paths:
+      - "groovy-all-*.jar"
 
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*groovy.*</version>'
+      - '<groovy.version>([^<]+)</groovy.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'groovy.*version="([0-9.]+)"'
+  - file_pattern: "groovy-*.jar"
+    patterns:
+      - 'groovy-([0-9.]+)\\.jar'
+      - 'groovy-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "groovy-all-*.jar"
+    patterns:
+      - 'groovy-all-([0-9.]+)\\.jar'
+      - 'groovy-all-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
-#  Spring Framework（Spring 链，如 Spring AOP + PropertyPathFactoryBean）
+# Spring Framework（Spring 链，如 Spring AOP + PropertyPathFactoryBean）
 ---
-name: spring-checker
+name: spring
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["spring-checker</artifactId>"]
-    extract_version_from_text:
-      pattern: '<artifactId>spring-checker</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["spring-checker-*.jar"]
-    extract_version_from_path:
-      pattern: 'spring-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "spring-core"
+  - file_contents:
+      pom.xml:
+        - "spring-context"
+  - file_contents:
+      pom.xml:
+        - "spring-web"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "spring-core"
+  - file_contents:
+      build.xml:
+        - "spring-context"
+  - file_contents:
+      build.xml:
+        - "spring-web"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "spring-core-*.jar"
+  - paths:
+      - "spring-context-*.jar"
+  - paths:
+      - "spring-web-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*spring-core.*</version>'
+      - '<spring.version>([^<]+)</spring.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'spring.*version="([0-9.]+)"'
+  - file_pattern: "spring-core-*.jar"
+    patterns:
+      - 'spring-core-([0-9.]+)\\.jar'
+      - 'spring-core-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "spring-context-*.jar"
+    patterns:
+      - 'spring-context-([0-9.]+)\\.jar'
+  - file_pattern: "spring-web-*.jar"
+    patterns:
+      - 'spring-web-([0-9.]+)\\.jar'
 
 # Hibernate Core（Hibernate 链）
 ---
-name: hibernate-checker
+name: hibernate
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["hibernate-checker</artifactId>"]
-    extract_version_from_text:
-      pattern: '<artifactId>hibernate-checker</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["hibernate-checker-*.jar"]
-    extract_version_from_path:
-      pattern: 'hibernate-checker-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
-
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "hibernate-core"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "hibernate-core"
+  # 规则3：通过hibernate配置文件检测
+  - paths:
+      - "hibernate.cfg.xml"
+    file_contents: {}
+  - paths:
+      - "persistence.xml"
+    file_contents: {}
+  # 规则4：通过jar文件检测
+  - paths:
+      - "hibernate-core-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*hibernate-core.*</version>'
+      - '<hibernate.version>([^<]+)</hibernate.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'hibernate.*version="([0-9.]+)"'
+  - file_pattern: "hibernate.cfg.xml"
+    patterns:
+      - "hibernate.version\\s*=\\s*[\"\"]([^\"']+)[\"']"
+  - file_pattern: "hibernate-core-*.jar"
+    patterns:
+      - 'hibernate-core-([0-9.]+)\\.jar'
+      - 'hibernate-core-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
 # Javassist（常用于动态字节码生成，辅助 gadget 链）
 ---
@@ -178,47 +405,354 @@ name: javassist
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["javassist</artifactId>", "org.javassist"]
-    extract_version_from_text:
-      pattern: '<artifactId>javassist</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["javassist-*.jar"]
-    extract_version_from_path:
-      pattern: 'javassist-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "javassist</artifactId>"
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "org.javassist"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "javassist"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "javassist-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*javassist.*</version>'
+      - '<javassist.version>([^<]+)</javassist.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'javassist.*version="([0-9.]+)"'
+  - file_pattern: "javassist-*.jar"
+    patterns:
+      - 'javassist-([0-9.]+)\\.jar'
+      - 'javassist-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
-#C3P0（数据库连接池，C3P0 链）
+# C3P0（数据库连接池，C3P0 链）
 ---
 name: c3p0
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["c3p0</artifactId>"]
-    extract_version_from_text:
-      pattern: '<artifactId>c3p0</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["c3p0-*.jar"]
-    extract_version_from_path:
-      pattern: 'c3p0-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "c3p0</artifactId>"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "c3p0"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "c3p0-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*c3p0.*</version>'
+      - '<c3p0.version>([^<]+)</c3p0.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'c3p0.*version="([0-9.]+)"'
+  - file_pattern: "c3p0-*.jar"
+    patterns:
+      - 'c3p0-([0-9.]+)\\.jar'
+      - 'c3p0-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
 
-# MyFaces（Apache MyFaces，JSF 链
+# MyFaces（Apache MyFaces，JSF 链）
 ---
 name: myfaces-impl
 type: component
 language: Java
 category: backend
-levels:
-  L1:
-    paths: ["pom.xml"]
-    contains: ["myfaces-impl</artifactId>"]
-    extract_version_from_text:
-      pattern: '<artifactId>myfaces-impl</artifactId>\s*<version>([^<]+)</version>'
-  L3:
-    paths: ["myfaces-impl-*.jar"]
-    extract_version_from_path:
-      pattern: 'myfaces-impl-([\d.]+[a-zA-Z0-9\.-]*)\.jar'
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "myfaces-impl</artifactId>"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "myfaces-impl"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "myfaces-impl-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*myfaces-impl.*</version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'myfaces-impl.*version="([0-9.]+)"'
+  - file_pattern: "myfaces-impl-*.jar"
+    patterns:
+      - 'myfaces-impl-([0-9.]+)\\.jar'
+      - 'myfaces-impl-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+# Apache Commons IO
+---
+name: commons-io
+type: component
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "commons-io"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "commons-io"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "commons-io-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*commons-io.*</version>'
+      - '<commons-io.version>([^<]+)</commons-io.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'commons-io.*version="([0-9.]+)"'
+  - file_pattern: "commons-io-*.jar"
+    patterns:
+      - 'commons-io-([0-9.]+)\\.jar'
+      - 'commons-io-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+# Apache Commons Lang
+---
+name: commons-lang
+type: component
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "commons-lang3"
+  - file_contents:
+      pom.xml:
+        - "commons-lang"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "commons-lang3"
+  - file_contents:
+      build.xml:
+        - "commons-lang"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "commons-lang-*.jar"
+  - paths:
+      - "commons-lang3-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*commons-lang.*</version>'
+      - '<commons-lang.version>([^<]+)</commons-lang.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'commons-lang.*version="([0-9.]+)"'
+      - 'commons-lang3.*version="([0-9.]+)"'
+  - file_pattern: "commons-lang-*.jar"
+    patterns:
+      - 'commons-lang-([0-9.]+)\\.jar'
+      - 'commons-lang-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "commons-lang3-*.jar"
+    patterns:
+      - 'commons-lang3-([0-9.]+)\\.jar'
+      - 'commons-lang3-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+# Apache HttpClient
+---
+name: httpclient
+type: component
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "httpclient"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "httpclient"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "httpclient-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*httpclient.*</version>'
+      - '<httpclient.version>([^<]+)</httpclient.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'httpclient.*version="([0-9.]+)"'
+  - file_pattern: "httpclient-*.jar"
+    patterns:
+      - 'httpclient-([0-9.]+)\\.jar'
+      - 'httpclient-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+# Jackson
+---
+name: jackson
+type: component
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - file_contents:
+      pom.xml:
+        - "jackson-databind"
+  - file_contents:
+      pom.xml:
+        - "jackson-core"
+  # 规则2：通过Ant build.xml文件检测
+  - file_contents:
+      build.xml:
+        - "jackson-databind"
+  - file_contents:
+      build.xml:
+        - "jackson-core"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "jackson-databind-*.jar"
+  - paths:
+      - "jackson-core-*.jar"
+  - paths:
+      - "jackson-annotations-*.jar"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*jackson-databind.*</version>'
+      - '<jackson.version>([^<]+)</jackson.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'jackson.*version="([0-9.]+)"'
+  - file_pattern: "jackson-databind-*.jar"
+    patterns:
+      - 'jackson-databind-([0-9.]+)\\.jar'
+      - 'jackson-databind-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+  - file_pattern: "jackson-core-*.jar"
+    patterns:
+      - 'jackson-core-([0-9.]+)\\.jar'
+
+# JUnit
+---
+name: junit
+type: component
+language: Java
+category: backend
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "junit"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "junit"
+  # 规则3：通过jar文件检测
+  - paths:
+      - "junit-*.jar"
+    file_contents: {}
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*junit.*</version>'
+      - '<junit.version>([^<]+)</junit.version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'junit.*version="([0-9.]+)"'
+  - file_pattern: "junit-*.jar"
+    patterns:
+      - 'junit-([0-9.]+)\\.jar'
+      - 'junit-[a-zA-Z0-9.-]+-([0-9.]+)\\.jar'
+
+# Apache Maven Surefire Plugin
+---
+name: maven-surefire-plugin
+type: component
+language: Java
+category: build
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "maven-surefire-plugin"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "maven-surefire-plugin"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*maven-surefire-plugin.*</version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'maven-surefire-plugin.*version="([0-9.]+)"'
+
+# Apache Tomcat Maven Plugin
+---
+name: tomcat-maven-plugin
+type: component
+language: Java
+category: build
+rules:
+  # 规则1：通过pom.xml文件检测
+  - paths:
+      - "pom.xml"
+    file_contents:
+      pom.xml:
+        - "tomcat-maven-plugin"
+  # 规则2：通过Ant build.xml文件检测
+  - paths:
+      - "build.xml"
+    file_contents:
+      build.xml:
+        - "tomcat-maven-plugin"
+version:
+  - file_pattern: "pom.xml"
+    patterns:
+      - '<version>.*tomcat-maven-plugin.*</version>'
+  - file_pattern: "build.xml"
+    patterns:
+      - 'tomcat-maven-plugin.*version="([0-9.]+)"'
