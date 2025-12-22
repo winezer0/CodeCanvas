@@ -1,4 +1,4 @@
-package analyzer
+package langengine
 
 import (
 	"reflect"
@@ -66,14 +66,14 @@ func TestExpandLanguages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := expandLanguages(tt.input)
+			got := ExpandLanguages(tt.input)
 
 			// Sort for comparison
 			sort.Strings(got)
 			sort.Strings(tt.expected)
 
 			if !reflect.DeepEqual(got, tt.expected) {
-				t.Errorf("expandLanguages() = %v, want %v", got, tt.expected)
+				t.Errorf("ExpandLanguages() = %v, want %v", got, tt.expected)
 			}
 		})
 	}

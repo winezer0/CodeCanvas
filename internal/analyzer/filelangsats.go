@@ -14,8 +14,8 @@ type FileStats struct {
 	Lines   int64
 }
 
-// CountFile 分析文件并返回其统计信息
-func CountFile(path string, lang *LanguageDefinition) (FileStats, error) {
+// CountFileStats 分析文件并返回其统计信息
+func CountFileStats(path string, lang *LangDefine) (FileStats, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return FileStats{}, err

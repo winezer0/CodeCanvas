@@ -1,4 +1,4 @@
-package classifier
+package langengine
 
 import (
 	"encoding/json"
@@ -16,18 +16,18 @@ func TestDetectCategories(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	c := NewLanguageClassifier()
+	c := NewLangClassifier()
 
 	tests := []struct {
 		name         string
-		languages    []model.LanguageInfo
+		languages    []model.LangInfo
 		packageJson  map[string]any
 		wantFrontend []string
 		wantBackend  []string
 	}{
 		{
 			name: "Basic Backend",
-			languages: []model.LanguageInfo{
+			languages: []model.LangInfo{
 				{Name: "Go"},
 				{Name: "Java"},
 			},
@@ -35,7 +35,7 @@ func TestDetectCategories(t *testing.T) {
 		},
 		{
 			name: "Basic Frontend",
-			languages: []model.LanguageInfo{
+			languages: []model.LangInfo{
 				{Name: "HTML"},
 				{Name: "CSS"},
 			},
@@ -43,7 +43,7 @@ func TestDetectCategories(t *testing.T) {
 		},
 		{
 			name: "JS with React (Frontend)",
-			languages: []model.LanguageInfo{
+			languages: []model.LangInfo{
 				{Name: "JavaScript"},
 			},
 			packageJson: map[string]any{
@@ -55,7 +55,7 @@ func TestDetectCategories(t *testing.T) {
 		},
 		{
 			name: "JS with Express (Backend)",
-			languages: []model.LanguageInfo{
+			languages: []model.LangInfo{
 				{Name: "JavaScript"},
 			},
 			packageJson: map[string]any{
@@ -67,7 +67,7 @@ func TestDetectCategories(t *testing.T) {
 		},
 		{
 			name: "Mixed Project",
-			languages: []model.LanguageInfo{
+			languages: []model.LangInfo{
 				{Name: "Go"},
 				{Name: "TypeScript"},
 			},

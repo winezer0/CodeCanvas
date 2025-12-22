@@ -1,16 +1,20 @@
+// Package analyzer 提供代码分析相关的功能
 package analyzer
 
-import "strings"
+// LangDefine 定义编程语言的基本特征和属性
+// 用于代码分析、语法高亮、注释处理等功能
 
-type LanguageDefinition struct {
-	Name         string
-	LineComments []string
-	MultiLine    [][]string // [[Start, End], [Start, End]]
-	Extensions   []string
-	Filenames    []string
+type LangDefine struct {
+	Name         string     // 语言名称（如 "Go", "JavaScript"）
+	LineComments []string   // 行注释标记（如 []string{"//"}）
+	MultiLine    [][]string // 多行注释标记 [[Start, End], ...]（如 [][]string{{"/*", "*/"}}）
+	Extensions   []string   // 文件扩展名（如 []string{".go"}）
+	Filenames    []string   // 特定文件名（如 []string{"Dockerfile"}）
 }
 
-var languages = []LanguageDefinition{
+// LangDefines 预定义的编程语言列表
+// 包含常见编程语言的基本特征和属性定义
+var LangDefines = []LangDefine{
 	{
 		Name:         "Go",
 		LineComments: []string{"//"},
@@ -191,31 +195,4 @@ var languages = []LanguageDefinition{
 		MultiLine:    [][]string{},
 		Filenames:    []string{"Makefile"},
 	},
-}
-
-var (
-	extToLanguage  = make(map[string]*LanguageDefinition)
-	fileToLanguage = make(map[string]*LanguageDefinition)
-)
-
-func init() {
-	for i := range languages {
-		lang := &languages[i]
-		for _, ext := range lang.Extensions {
-			extToLanguage[ext] = lang
-		}
-		for _, name := range lang.Filenames {
-			fileToLanguage[name] = lang
-		}
-	}
-}
-
-// GetLanguageByExtension returns the language definition for a given file extension
-func GetLanguageByExtension(ext string) *LanguageDefinition {
-	return extToLanguage[strings.ToLower(ext)]
-}
-
-// GetLanguageByFilename returns the language definition for a given filename
-func GetLanguageByFilename(name string) *LanguageDefinition {
-	return fileToLanguage[name]
 }

@@ -1,0 +1,32 @@
+# 语言分类规则
+- name: Python
+  category: desktop
+  features:
+    dependencies:
+      - tkinter
+      - pyqt5
+      - pysimplegui
+      - wxpython
+      - kivy
+- name: Rust
+  category: desktop
+  features:
+    dependencies:
+      - gtk
+      - qt_widgets
+      - fltk
+      - tauri
+    file_patterns:
+      - '**/Cargo.toml'
+      - '**/*.rs'
+- name: 'C#'
+  category: desktop
+  features:
+    dependencies:
+      - wpf
+      - winforms
+      - avalonia
+      - uno.platform
+    file_patterns:
+      - '**/*.xaml'
+      - '**/*.csproj'

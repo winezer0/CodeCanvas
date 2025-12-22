@@ -5,7 +5,7 @@ import (
 )
 
 func TestEmbeddedRulesVerification(t *testing.T) {
-	rules := EmbeddedCanvas()
+	rules := EmbeddedFrameRules()
 
 	if len(rules) == 0 {
 		t.Fatal("Expected embedded rules to be loaded, got 0")

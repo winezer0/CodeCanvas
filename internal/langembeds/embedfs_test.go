@@ -1,4 +1,4 @@
-package embedfs
+package langembeds
 
 import (
 	"io"
@@ -12,7 +12,7 @@ import (
 // TestAllYamlFiles tests that all embedded YAML files are valid
 func TestAllYamlFiles(t *testing.T) {
 	// Get all yml files from the embedded filesystem
-	files, err := fs.Glob(CanvasEmbedFS, "*.yml")
+	files, err := fs.Glob(LanguageEmbedFS, "*.yml")
 	if err != nil {
 		t.Fatalf("Failed to get YAML files: %v", err)
 	}
@@ -25,49 +25,39 @@ func TestAllYamlFiles(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 			// Read file content
-			content, err := CanvasEmbedFS.ReadFile(file)
+			content, err := LanguageEmbedFS.ReadFile(file)
 			if err != nil {
 				t.Fatalf("Failed to read file %s: %v", file, err)
 			}
 
-			// Try to parse as a slice of frameworks
-			var frameworks []struct {
+			// Try to parse as a slice of language rules
+			var languages []struct {
 				Name     string `yaml:"name"`
 				Type     string `yaml:"type"`
 				Language string `yaml:"language"`
 				Category string `yaml:"category"`
 				Rules    []struct {
-					Paths        []string            `yaml:"paths"`
+					FilePatterns []string            `yaml:"file_patterns"`
 					FileContents map[string][]string `yaml:"file_contents"`
 				} `yaml:"rules"`
-				// Version extraction rules at the framework level
-				Versions []struct {
-					FilePattern string   `yaml:"file_pattern"`
-					Patterns    []string `yaml:"patterns"`
-				} `yaml:"version"`
 			}
 
-			if err := yaml.Unmarshal(content, &frameworks); err != nil {
+			if err := yaml.Unmarshal(content, &languages); err != nil {
 				// If slice parsing fails, try as multi-document YAML
 				decoder := yaml.NewDecoder(strings.NewReader(string(content)))
 				for {
-					var framework struct {
+					var language struct {
 						Name     string `yaml:"name"`
 						Type     string `yaml:"type"`
 						Language string `yaml:"language"`
 						Category string `yaml:"category"`
 						Rules    []struct {
-							Paths        []string            `yaml:"paths"`
+							FilePatterns []string            `yaml:"file_patterns"`
 							FileContents map[string][]string `yaml:"file_contents"`
 						} `yaml:"rules"`
-						// Version extraction rules at the framework level
-						Versions []struct {
-							FilePattern string   `yaml:"file_pattern"`
-							Patterns    []string `yaml:"patterns"`
-						} `yaml:"version"`
 					}
 
-					if err := decoder.Decode(&framework); err != nil {
+					if err := decoder.Decode(&language); err != nil {
 						if err == io.EOF {
 							break
 						}

@@ -1,5 +1,5 @@
 // Package engine 提供了 CodeCanvas 的框架和组件检测功能。
-package engine
+package frameengine
 
 import (
 	"context"
@@ -65,8 +65,8 @@ func NewCanvasEngine(rulesDir string) (*CanvasEngine, error) {
 
 // DetectFrameworks 根据加载的规则检测给定目录中的框架和组件。
 // 使用文件索引进行加速。
-func (e *CanvasEngine) DetectFrameworks(ctx context.Context, index *model.FileIndex, languages []string) (*model.DetectionResult, error) {
-	result := &model.DetectionResult{
+func (e *CanvasEngine) DetectFrameworks(ctx context.Context, index *model.FileIndex, languages []string) (*model.DetectionInfo, error) {
+	result := &model.DetectionInfo{
 		Frameworks: []model.DetectedItem{},
 		Components: []model.DetectedItem{},
 	}
@@ -93,7 +93,7 @@ func (e *CanvasEngine) DetectFrameworks(ctx context.Context, index *model.FileIn
 				Language: framework.Language,
 				Version:  version,
 				Category: framework.Category,
-				Evidence: fmt.Sprintf("Rule matched for %s", framework.Name),
+				Evidence: fmt.Sprintf("FrameRule matched for %s", framework.Name),
 			}
 			// 根据规则类型添加到结果
 			switch framework.Type {
@@ -165,7 +165,7 @@ func (e *CanvasEngine) GetSupportedFrameworks() []model.FrameworkMetadata {
 		levels := make(map[string]string)
 		for i, rule := range framework.Rules {
 			if len(rule.Paths) > 0 {
-				levels[fmt.Sprintf("Rule%d", i+1)] = rule.Paths[0] // 使用第一个路径作为代表
+				levels[fmt.Sprintf("FrameRule%d", i+1)] = rule.Paths[0] // 使用第一个路径作为代表
 			}
 		}
 
@@ -194,7 +194,7 @@ func (e *CanvasEngine) GetSupportedComponents() []model.ComponentMetadata {
 		levels := make(map[string]string)
 		for i, rule := range component.Rules {
 			if len(rule.Paths) > 0 {
-				levels[fmt.Sprintf("Rule%d", i+1)] = rule.Paths[0] // 使用第一个路径作为代表
+				levels[fmt.Sprintf("FrameRule%d", i+1)] = rule.Paths[0] // 使用第一个路径作为代表
 			}
 		}
 		componentMeta := model.ComponentMetadata{

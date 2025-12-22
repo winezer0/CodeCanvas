@@ -1,0 +1,67 @@
+# 语言分类规则
+- name: Vue
+  category: frontend
+  features:
+    file_patterns:
+      - '**/*.vue'
+      - '**/vue.config.js'
+    dependencies:
+      - vue
+      - vue-router
+      - vuex
+      - pinia
+      - nuxt
+- name: Markdown
+  category: frontend
+  features:
+    file_patterns:
+      - '**/*.md'
+      - '**/*.markdown'
+      - '**/README*'
+      - '**/CHANGELOG*'
+- name: JavaScript
+  category: frontend
+  features:
+    dependencies:
+      - react
+      - vue
+      - '@angular/core'
+    file_patterns:
+      - '**/*.jsx'
+      - '**/*.tsx'
+- name: TypeScript
+  category: frontend
+  features:
+    dependencies:
+      - react
+      - vue
+      - '@angular/core'
+    file_patterns:
+      - '**/*.tsx'
+- name: JSX
+  category: frontend
+- name: TSX
+  category: frontend
+- name: HTML
+  category: frontend
+- name: CSS
+  category: frontend
+- name: SCSS
+  category: frontend
+- name: Less
+  category: frontend
+- name: WebAssembly
+  category: frontend
+  features:
+    file_patterns:
+      - '**/*.wasm'
+- name: Svelte
+  category: frontend
+- name: Less
+  category: frontend
+- name: Stylus
+  category: frontend
+- name: Handlebars
+  category: frontend
+- name: Pug
+  category: frontend

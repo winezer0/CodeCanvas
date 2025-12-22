@@ -1,4 +1,4 @@
-package engine
+package frameengine
 
 import (
 	"path/filepath"
@@ -52,7 +52,7 @@ func extractVersion(content []byte, patterns []string) string {
 // matchFrame 检查 rules 中是否有任意一条规则被满足。
 // 规则满足条件 = 所有 Paths 存在 AND 所有 FileContents 条件满足。
 // 返回 true 表示至少有一条规则匹配成功。
-func matchFrame(matcher *IndexMatcher, rules []model.Rule, fileContentCache map[string][]byte) bool {
+func matchFrame(matcher *IndexMatcher, rules []model.FrameRule, fileContentCache map[string][]byte) bool {
 	for _, rule := range rules {
 		if len(rule.Paths) == 0 && len(rule.FileContents) == 0 {
 			logging.Errorf("match rules not has any match content: %s", utils.ToJson(rule))

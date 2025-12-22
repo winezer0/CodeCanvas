@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/winezer0/codecanvas/internal/analyzer"
-	"github.com/winezer0/codecanvas/internal/engine"
+	"github.com/winezer0/codecanvas/internal/frameengine"
 	"github.com/winezer0/codecanvas/internal/model"
 )
 
@@ -24,7 +24,7 @@ func Analyze(path string, rulesDir string) (*model.CanvasReport, error) {
 	}
 
 	// Create rule engine
-	detectEngine, err := engine.NewCanvasEngine(rulesDir)
+	detectEngine, err := frameengine.NewCanvasEngine(rulesDir)
 	if err != nil {
 		return nil, fmt.Errorf("error loading rules: %v", err)
 	}
@@ -53,6 +53,7 @@ func ToSimpleReport(report *model.CanvasReport) *model.AnalysisResult {
 		DesktopLanguages:      report.CodeProfile.DesktopLanguages,
 		FrontendLanguages:     report.CodeProfile.FrontendLanguages,
 		BackendLanguages:      report.CodeProfile.BackendLanguages,
+		OtherLanguages:        report.CodeProfile.OtherLanguages,
 		Frameworks:            getItemsWithVersions(report.Detection.Frameworks),
 		Components:            getItemsWithVersions(report.Detection.Components),
 		MainFrontendLanguages: getTopLanguages(report.CodeProfile.FrontendLanguages, langStats, nil, 3),
@@ -82,14 +83,14 @@ func getItemsWithVersions(items []model.DetectedItem) map[string]string {
 }
 
 // getTopLanguages 根据代码行数和文件数对语言进行排序并返回前 N 个
-func getTopLanguages(candidates []string, stats map[string]model.LanguageInfo, exclude []string, limit int) []string {
+func getTopLanguages(candidates []string, stats map[string]model.LangInfo, exclude []string, limit int) []string {
 	// 过滤需要排除的语言
 	excludeMap := make(map[string]bool)
 	for _, e := range exclude {
 		excludeMap[strings.ToLower(e)] = true
 	}
 
-	var validLangs []model.LanguageInfo
+	var validLangs []model.LangInfo
 	for _, name := range candidates {
 		if excludeMap[strings.ToLower(name)] {
 			continue
@@ -120,8 +121,8 @@ func getTopLanguages(candidates []string, stats map[string]model.LanguageInfo, e
 	return result
 }
 
-func languageInfosToMap(languageInfos []model.LanguageInfo) map[string]model.LanguageInfo {
-	langStats := make(map[string]model.LanguageInfo)
+func languageInfosToMap(languageInfos []model.LangInfo) map[string]model.LangInfo {
+	langStats := make(map[string]model.LangInfo)
 	for _, l := range languageInfos {
 		langStats[l.Name] = l
 	}

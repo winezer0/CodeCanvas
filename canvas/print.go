@@ -35,6 +35,24 @@ func PrintReport(report *model.CanvasReport) {
 		fmt.Println()
 	}
 
+	// Desktop languages
+	if len(report.CodeProfile.DesktopLanguages) > 0 {
+		fmt.Println("Desktop LanguageInfos:")
+		for _, lang := range report.CodeProfile.DesktopLanguages {
+			fmt.Printf("- %s\n", lang)
+		}
+		fmt.Println()
+	}
+
+	// Other languages
+	if len(report.CodeProfile.OtherLanguages) > 0 {
+		fmt.Println("Other LanguageInfos:")
+		for _, lang := range report.CodeProfile.OtherLanguages {
+			fmt.Printf("- %s\n", lang)
+		}
+		fmt.Println()
+	}
+
 	// All languages (verbose only)
 	fmt.Println("All LanguageInfos:")
 	for _, lang := range report.CodeProfile.LanguageInfos {
@@ -72,7 +90,7 @@ func PrintDetectedItems(title string, items []model.DetectedItem) {
 		byCategory[item.Category] = append(byCategory[item.Category], item)
 	}
 
-	categories := []string{model.CategoryFrontend, model.CategoryBackend, model.CategoryDesktop}
+	categories := model.AllCategory
 	for _, cat := range categories {
 		PrintCategoryItems(cat, byCategory[cat])
 	}

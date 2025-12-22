@@ -1,4 +1,4 @@
-package engine
+package frameengine
 
 import (
 	"io"
@@ -13,7 +13,7 @@ import (
 
 // loadEmbeddedRules 将默认的嵌入式规则加载到规则引擎中。
 func (e *CanvasEngine) loadEmbeddedRules() {
-	embeddedRules := embeds.EmbeddedCanvas()
+	embeddedRules := embeds.EmbeddedFrameRules()
 
 	// 将嵌入式规则添加到引擎中
 	for _, rule := range embeddedRules {

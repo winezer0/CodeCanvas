@@ -1,29 +1,32 @@
 package embeds
 
 import (
-	"github.com/winezer0/codecanvas/internal/embedfs"
-	"github.com/winezer0/codecanvas/internal/model"
+	"errors"
 	"io"
 	"io/fs"
 	"strings"
 
+	"github.com/winezer0/codecanvas/internal/frameembeds"
+	"github.com/winezer0/codecanvas/internal/langembeds"
+	"github.com/winezer0/codecanvas/internal/model"
+
 	"gopkg.in/yaml.v3"
 )
 
-// EmbeddedCanvas returns the default set of framework and component detection rules.
+// EmbeddedFrameRules returns the default set of framework and component detection rules.
 // Rules are embedded in the binary using the embed package and loaded from YAML files.
-func EmbeddedCanvas() []*model.Framework {
+func EmbeddedFrameRules() []*model.Framework {
 	var allRules []*model.Framework
 
 	// Read all files from the embedded filesystem
-	files, err := fs.Glob(embedfs.CanvasEmbedFS, "*.yml")
+	files, err := fs.Glob(frameembeds.FrameEmbedFS, "*.yml")
 	if err != nil {
 		// Should not happen in a valid build
 		return []*model.Framework{}
 	}
 
 	for _, filename := range files {
-		fileContent, err := embedfs.CanvasEmbedFS.ReadFile(filename)
+		fileContent, err := frameembeds.FrameEmbedFS.ReadFile(filename)
 		if err != nil {
 			continue
 		}
@@ -60,4 +63,53 @@ func EmbeddedCanvas() []*model.Framework {
 	}
 
 	return allRules
+}
+
+// EmbeddedLangRules 从 embed.FS 中加载所有 .yml 文件并解析为语言分类规则
+// 支持两种 YAML 格式：
+//  1. 单个文件包含一个 LangRule 数组（推荐）
+//  2. 多文档 YAML 流（每个文档是一个规则）
+func EmbeddedLangRules() map[string]model.LangRule {
+	rules := make(map[string]model.LangRule)
+
+	files, err := fs.Glob(langembeds.LanguageEmbedFS, "*.yml")
+	if err != nil {
+		return rules // 返回空 map
+	}
+
+	for _, filename := range files {
+		content, err := langembeds.LanguageEmbedFS.ReadFile(filename)
+		if err != nil {
+			continue // 跳过无法读取的文件
+		}
+
+		// 尝试作为单文档数组解析
+		var rulesArray []model.LangRule
+		if err := yaml.Unmarshal(content, &rulesArray); err == nil && len(rulesArray) > 0 && rulesArray[0].Name != "" {
+			for _, rule := range rulesArray {
+				if rule.Name != "" {
+					rules[strings.ToLower(rule.Name)] = rule
+				}
+			}
+			continue
+		}
+
+		// 回退到多文档流解析
+		decoder := yaml.NewDecoder(strings.NewReader(string(content)))
+		for {
+			var rule model.LangRule
+			if err := decoder.Decode(&rule); err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				// 遇到非 EOF 错误，放弃当前文件
+				break
+			}
+			if rule.Name != "" {
+				rules[strings.ToLower(rule.Name)] = rule
+			}
+		}
+	}
+
+	return rules
 }

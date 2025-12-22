@@ -1,0 +1,138 @@
+# 语言分类规则
+- name: GraphQL
+  category: backend
+  features:
+    file_patterns:
+      - '**/*.graphql'
+      - '**/*.gql'
+      - '**/schema.graphql'
+    dependencies:
+      - graphql
+      - apollo-server
+      - graphql-yoga
+      - mercurius
+- name: Docker
+  category: backend
+  features:
+    file_patterns:
+      - '**/Dockerfile'
+      - '**/docker-compose.yml'
+      - '**/docker-compose.yaml'
+- name: YAML
+  category: backend
+  features:
+    file_patterns:
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/docker-compose.*'
+      - '**/.github/workflows/*'
+- name: Shell
+  category: backend
+  features:
+    file_patterns:
+      - '**/*.sh'
+      - '**/scripts/*'
+      - '**/*.bash'
+      - '**/*.zsh'
+- name: JavaScript
+  category: backend
+  features:
+    dependencies:
+      - express
+      - koa
+      - nestjs
+      - fastify
+      - hapi
+      - meteor
+    file_patterns:
+      - '**/server.js'
+      - '**/server.ts'
+      - '**/api/**/*'
+      - '**/backend/**/*'
+- name: TypeScript
+  category: backend
+  features:
+    dependencies:
+      - express
+      - koa
+      - nestjs
+      - fastify
+      - hapi
+    file_patterns:
+      - '**/server.ts'
+      - '**/api/**/*.ts'
+      - '**/backend/**/*.ts'
+- name: Java
+  category: backend
+- name: Kotlin
+  category: backend
+- name: Python
+  category: backend
+- name: Go
+  category: backend
+- name: Ruby
+  category: backend
+- name: PHP
+  category: backend
+- name: '.NET'
+  category: backend
+- name: Rust
+  category: backend
+- name: Node.js
+  category: backend
+  features:
+    dependencies:
+      - express
+      - koa
+      - nestjs
+    file_patterns:
+      - server.js
+      - server.ts
+      - src/server/*
+- name: Scala
+  category: backend
+- name: Swift
+  category: backend
+- name: Objective-C
+  category: backend
+- name: Perl
+  category: backend
+- name: Lua
+  category: backend
+- name: Elixir
+  category: backend
+- name: Groovy
+  category: backend
+- name: PowerShell
+  category: backend
+- name: C
+  category: backend
+- name: C++
+  category: backend
+- name: XML
+  category: backend
+  features:
+    file_patterns:
+      - '**/*.xml'
+      - '**/pom.xml'
+      - '**/web.xml'
+      - '**/applicationContext.xml'
+- name: SQL
+  category: backend
+  features:
+    file_patterns:
+      - '**/*.sql'
+      - '**/database/**/*'
+- name: Dockerfile
+  category: backend
+  features:
+    file_patterns:
+      - '**/Dockerfile'
+- name: Makefile
+  category: backend
+  features:
+    file_patterns:
+      - '**/Makefile'
+      - '**/*.mk'
+- name: 'C#'
+  category: backend
