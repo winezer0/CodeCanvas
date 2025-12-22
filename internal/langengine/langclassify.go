@@ -10,15 +10,21 @@ import (
 )
 
 // LangClassify 语言分类器的主结构体
-// - rules: 存储所有语言分类规则的映射，键为小写的语言名称
+// - langMap: 存储所有统一语言模型的映射，键为小写的语言名称
+
 type LangClassify struct {
-	ruleMap map[string]model.LangRule
+	langMap map[string]model.Language
 }
 
+// LanguageRules 加载embeds的默认规则
+var LanguageRules = embeds.EmbeddedLangRules()
+
 // NewLangClassifier 创建一个新的语言分类器实例
-// 初始化分类器并加载默认规则
+// 初始化分类器并加载所有语言规则
 func NewLangClassifier() *LangClassify {
-	c := &LangClassify{ruleMap: embeds.EmbeddedLangRules()}
+	c := &LangClassify{
+		langMap: LanguageRules,
+	}
 	return c
 }
 
@@ -30,8 +36,9 @@ func NewLangClassifier() *LangClassify {
 // - frontend: 前端语言列表
 // - backend: 后端语言列表
 // - desktop: 桌面语言列表
+// - other: 其他语言列表
 // - all: 所有语言列表（去重）
-func (c *LangClassify) DetectCategories(root string, langs []model.LangInfo) (frontend, backend, desktop, other, all []string) {
+func (c *LangClassify) DetectCategories(root string, langs []model.LangInfo) (frontend, backend, desktop, other, all, expand []string) {
 	frontedSet := make(map[string]bool)
 	backendSet := make(map[string]bool)
 	desktopSet := make(map[string]bool)
@@ -39,30 +46,32 @@ func (c *LangClassify) DetectCategories(root string, langs []model.LangInfo) (fr
 	allSet := make(map[string]bool) // 用于去重所有语言
 
 	deps := readPackageJSONDeps(root)
-
-	for _, li := range langs {
-		name := strings.ToLower(li.Name)
-		langRule, ok := c.ruleMap[name]
-		if ok {
-			cat := applyHeuristics(root, langRule, deps)
-			switch cat {
-			case model.CategoryFrontend:
-				frontedSet[li.Name] = true
-			case model.CategoryBackend:
-				backendSet[li.Name] = true
-			case model.CategoryDesktop:
-				desktopSet[li.Name] = true
-			case model.CategoryOther:
-				otherSet[li.Name] = true
-			}
+	for _, langInfo := range langs {
+		name := strings.ToLower(langInfo.Name)
+		allSet[langInfo.Name] = true
+		// 检查是否有统一语言模型
+		if langRule, ok := c.langMap[name]; !ok {
+			// 没有规则，分类为other
+			logging.Errorf("lang model not found for %s", name)
+			otherSet[langInfo.Name] = true
+			continue
 		} else {
-			otherSet[li.Name] = true
-			//// 注意：Desktop 只能通过 rules 判断
-			logging.Warnf("Incomplete language category for: %s", name)
+			// 应用动态分类规则
+			cats := ApplyDynamicHeuristics(root, langRule, deps)
+			for _, cat := range cats {
+				// 根据分类结果添加到相应的集合
+				switch cat {
+				case model.CategoryFrontend:
+					frontedSet[langInfo.Name] = true
+				case model.CategoryBackend:
+					backendSet[langInfo.Name] = true
+				case model.CategoryDesktop:
+					desktopSet[langInfo.Name] = true
+				default:
+					otherSet[langInfo.Name] = true
+				}
+			}
 		}
-
-		// 所有语言都加入 allSet（去重）
-		allSet[li.Name] = true
 	}
 
 	// 提取结果（保持顺序无关，若需排序可加 sort.Strings）
@@ -71,5 +80,6 @@ func (c *LangClassify) DetectCategories(root string, langs []model.LangInfo) (fr
 	desktop = utils.Mapkeys(desktopSet)
 	other = utils.Mapkeys(otherSet)
 	all = utils.Mapkeys(allSet)
+	expand = ExpandLanguages(all)
 	return
 }

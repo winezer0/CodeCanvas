@@ -29,7 +29,7 @@ func Analyze(path string, rulesDir string) (*model.CanvasReport, error) {
 		return nil, fmt.Errorf("error loading rules: %v", err)
 	}
 	// 检测框架和组件
-	detect, err := detectEngine.DetectFrameworks(ctx, index, profile.ExpandLanguages)
+	detect, err := detectEngine.DetectFrameworks(ctx, index, profile.Expands)
 	if err != nil {
 		return nil, fmt.Errorf("error detecting frameworks and components: %v", err)
 	}

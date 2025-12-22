@@ -15,7 +15,7 @@ type FileStats struct {
 }
 
 // CountFileStats 分析文件并返回其统计信息
-func CountFileStats(path string, lang *LangDefine) (FileStats, error) {
+func CountFileStats(path string) (FileStats, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return FileStats{}, err
@@ -30,13 +30,14 @@ func CountFileStats(path string, lang *LangDefine) (FileStats, error) {
 	scanner.Buffer(buf, maxCapacity)
 
 	inBlockComment := false
-	var currentBlockEnd string
 
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
+		line := scanner.Text()
 		stats.Lines++
+		trimmedLine := strings.TrimSpace(line)
 
-		if line == "" {
+		// 处理空白行
+		if trimmedLine == "" {
 			if inBlockComment {
 				stats.Comment++
 			} else {
@@ -45,49 +46,39 @@ func CountFileStats(path string, lang *LangDefine) (FileStats, error) {
 			continue
 		}
 
+		// 处理块注释
 		if inBlockComment {
 			stats.Comment++
-			if strings.Contains(line, currentBlockEnd) {
+			// 检查块注释结束
+			if strings.Contains(line, "*/") {
 				inBlockComment = false
-				currentBlockEnd = ""
 			}
 			continue
 		}
 
 		// 检查块注释开始
-		blockStarted := false
-		for _, block := range lang.MultiLine {
-			if strings.HasPrefix(line, block[0]) {
+		if strings.Contains(line, "/*") {
+			stats.Comment++
+			// 检查块注释是否在同一行结束
+			if !strings.Contains(line, "*/") {
 				inBlockComment = true
-				currentBlockEnd = block[1]
-				stats.Comment++
-				blockStarted = true
-				// 检查它是否也在同一行结束
-				if strings.Contains(line[len(block[0]):], block[1]) {
-					inBlockComment = false
-					currentBlockEnd = ""
-				}
-				break
 			}
-		}
-		if blockStarted {
 			continue
 		}
 
 		// 检查行注释
-		isLineComment := false
-		for _, c := range lang.LineComments {
-			if strings.HasPrefix(line, c) {
-				stats.Comment++
-				isLineComment = true
-				break
-			}
-		}
-		if isLineComment {
+		if strings.HasPrefix(trimmedLine, "//") || strings.HasPrefix(trimmedLine, "#") {
+			stats.Comment++
 			continue
 		}
 
-		// 如果不是空行，也不是注释，就是代码
+		// 检查行内注释
+		if strings.Contains(line, "//") || strings.Contains(line, "#") {
+			stats.Code++
+			continue
+		}
+
+		// 其他情况视为代码
 		stats.Code++
 	}
 

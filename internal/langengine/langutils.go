@@ -9,53 +9,42 @@ import (
 	"github.com/winezer0/codecanvas/internal/model"
 )
 
-// applyHeuristics 应用启发式规则对语言进行分类
+// ApplyDynamicHeuristics 应用动态分类规则对语言进行分类
 // 参数:
 // - root: 项目根目录路径
-// - r: 语言分类规则
+// - lang: 统一语言模型
 // - deps: 项目依赖映射
 // 返回值:
 // - string: 分类结果（frontend/backend/desktop/other）
-func applyHeuristics(root string, r model.LangRule, deps map[string]bool) string {
-	name := strings.ToLower(r.Name)
-	if name == "javascript" || name == "typescript" {
-		// 针对JavaScript/TypeScript的特殊处理
-		// 检查后端框架依赖
-		if deps["express"] || deps["koa"] || deps["nestjs"] || deps["fastify"] || deps["hapi"] {
-			return model.CategoryBackend
-		}
-		// 检查前端框架依赖
-		if deps["react"] || deps["vue"] || deps["@angular/core"] || deps["next"] || deps["nuxt"] {
-			return model.CategoryFrontend
-		}
+func ApplyDynamicHeuristics(root string, lang model.Language, deps map[string]bool) []string {
+	baseRes := []string{lang.Category}
+	if len(lang.Dynamic) == 0 {
+		return baseRes
 	}
-	// 如果规则中已经明确指定了分类，则直接返回
-	if r.Category == model.CategoryFrontend || r.Category == model.CategoryBackend || r.Category == model.CategoryDesktop || r.Category == model.CategoryOther {
-		return r.Category
-	}
-	// 检查依赖包
-	if len(r.Features.Dependencies) > 0 {
-		for _, d := range r.Features.Dependencies {
-			if deps[strings.ToLower(d)] {
-				return model.CategoryFrontend
+
+	// 首先检查动态分类规则
+	for _, dynamic := range lang.Dynamic {
+		// 检查依赖条件
+		if len(dynamic.Dependencies) > 0 {
+			for _, dep := range dynamic.Dependencies {
+				if deps[strings.ToLower(dep)] {
+					baseRes = append(baseRes, dynamic.Category)
+				}
+			}
+		}
+		// 检查文件模式条件
+		if len(dynamic.FilePatterns) > 0 {
+			for _, pattern := range dynamic.FilePatterns {
+				matches, _ := filepath.Glob(filepath.Join(root, pattern))
+				if len(matches) > 0 {
+					baseRes = append(baseRes, dynamic.Category)
+				}
 			}
 		}
 	}
-	// 检查文件模式
-	for _, p := range r.Features.FilePatterns {
-		matches, _ := filepath.Glob(filepath.Join(root, p))
-		if len(matches) > 0 {
-			// 根据文件名模式推测分类
-			if strings.Contains(strings.ToLower(r.Name), "jsx") ||
-				strings.Contains(strings.ToLower(r.Name), "tsx") ||
-				strings.Contains(strings.ToLower(r.Name), "html") ||
-				strings.Contains(strings.ToLower(r.Name), "css") {
-				return model.CategoryFrontend
-			}
-			return model.CategoryBackend
-		}
-	}
-	return model.CategoryOther
+
+	// 如果没有匹配到动态规则，则使用默认分类
+	return baseRes
 }
 
 // readPackageJSONDeps 从package.json读取项目依赖，用于JavaScript/TypeScript分类

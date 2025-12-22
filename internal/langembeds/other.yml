@@ -1,3 +1,53 @@
-# 语言分类规则
-- name: Json
+# 其他语言规则
+- name: JSON
+  line_comments: []
+  multi_line: []
+  extensions: [".json"]
   category: other
+  dynamic: []
+
+- name: YAML
+  line_comments: ["#"]
+  multi_line: []
+  extensions: [".yml", ".yaml"]
+  category: other
+  dynamic:
+    - category: other
+      file_patterns: ["**/docker-compose.*", "**/.github/workflows/*"]
+
+- name: Docker
+  line_comments: []
+  multi_line: []
+  extensions: []
+  filenames: ["Dockerfile"]
+  category: other
+  dynamic:
+    - category: other
+      file_patterns: ["**/docker-compose.yml", "**/docker-compose.yaml"]
+
+
+- name: XML
+  line_comments: []
+  multi_line: [["<!--", "-->"]]
+  extensions: [".xml"]
+  category: other
+  dynamic:
+    - category: other
+      file_patterns: ["**/pom.xml", "**/web.xml", "**/applicationContext.xml"]
+
+- name: SQL
+  line_comments: ["--"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".sql"]
+  category: other
+  dynamic:
+    - category: other
+      file_patterns: ["**/database/**/*"]
+
+- name: Makefile
+  line_comments: ["#"]
+  multi_line: []
+  extensions: [".mk"]
+  filenames: ["Makefile"]
+  category: other
+  dynamic: []

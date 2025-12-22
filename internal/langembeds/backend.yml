@@ -1,138 +1,174 @@
-# 语言分类规则
-- name: GraphQL
-  category: backend
-  features:
-    file_patterns:
-      - '**/*.graphql'
-      - '**/*.gql'
-      - '**/schema.graphql'
-    dependencies:
-      - graphql
-      - apollo-server
-      - graphql-yoga
-      - mercurius
-- name: Docker
-  category: backend
-  features:
-    file_patterns:
-      - '**/Dockerfile'
-      - '**/docker-compose.yml'
-      - '**/docker-compose.yaml'
-- name: YAML
-  category: backend
-  features:
-    file_patterns:
-      - '**/*.yml'
-      - '**/*.yaml'
-      - '**/docker-compose.*'
-      - '**/.github/workflows/*'
-- name: Shell
-  category: backend
-  features:
-    file_patterns:
-      - '**/*.sh'
-      - '**/scripts/*'
-      - '**/*.bash'
-      - '**/*.zsh'
-- name: JavaScript
-  category: backend
-  features:
-    dependencies:
-      - express
-      - koa
-      - nestjs
-      - fastify
-      - hapi
-      - meteor
-    file_patterns:
-      - '**/server.js'
-      - '**/server.ts'
-      - '**/api/**/*'
-      - '**/backend/**/*'
-- name: TypeScript
-  category: backend
-  features:
-    dependencies:
-      - express
-      - koa
-      - nestjs
-      - fastify
-      - hapi
-    file_patterns:
-      - '**/server.ts'
-      - '**/api/**/*.ts'
-      - '**/backend/**/*.ts'
-- name: Java
-  category: backend
-- name: Kotlin
-  category: backend
-- name: Python
-  category: backend
-- name: Go
-  category: backend
-- name: Ruby
-  category: backend
-- name: PHP
-  category: backend
-- name: '.NET'
-  category: backend
-- name: Rust
-  category: backend
+# 后端语言规则
 - name: Node.js
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".js", ".mjs", ".cjs"]
   category: backend
-  features:
-    dependencies:
-      - express
-      - koa
-      - nestjs
-    file_patterns:
-      - server.js
-      - server.ts
-      - src/server/*
+  dynamic:
+    - category: backend
+      dependencies: ["express", "koa", "nestjs", "fastify", "hapi", "meteor"]
+      file_patterns: ["**/server.js", "**/api/**/*.js", "**/backend/**/*.js"]
+
+- name: Python
+  line_comments: ["#"]
+  multi_line: [["\"\"\"", "\"\"\""], ["'\"'", "'\"'"]]
+  extensions: [".py"]
+  category: backend
+  dynamic:
+    - category: desktop
+      dependencies: ["tkinter", "pyqt5", "pysimplegui"]
+      file_patterns: ["**/*.pyw"]
+    - category: frontend
+      dependencies: ["django", "flask", "fastapi"]
+      file_patterns: ["**/templates/**/*.py"]
+
+- name: C#
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".cs"]
+  category: backend
+  dynamic:
+    - category: desktop
+      dependencies: ["wpf", "winforms", "avalonia"]
+      file_patterns: ["**/*.xaml"]
+
+
+
+- name: GraphQL
+  line_comments: []
+  multi_line: []
+  extensions: [".graphql", ".gql"]
+  category: backend
+  dynamic:
+    - category: backend
+      file_patterns: ["**/schema.graphql"]
+      dependencies: ["graphql", "apollo-server", "graphql-yoga", "mercurius"]
+
+- name: Shell
+  line_comments: ["#"]
+  multi_line: []
+  extensions: [".sh", ".bash", ".zsh"]
+  category: backend
+  dynamic:
+    - category: backend
+      file_patterns: ["**/scripts/*"]
+
+- name: Java
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".java"]
+  category: backend
+  dynamic: []
+
+- name: Kotlin
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".kt", ".kts"]
+  category: backend
+  dynamic: []
+
+
+- name: Go
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".go"]
+  category: backend
+  dynamic: []
+
+- name: Ruby
+  line_comments: ["#"]
+  multi_line: [["=begin", "=end"]]
+  extensions: [".rb"]
+  category: backend
+  dynamic: []
+
+- name: PHP
+  line_comments: ["//", "#"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".php"]
+  category: backend
+  dynamic: []
+
+- name: .NET
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".cs", ".vb"]
+  category: backend
+  dynamic: []
+
+- name: Rust
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".rs"]
+  category: backend
+  dynamic: []
+
 - name: Scala
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".scala"]
   category: backend
+  dynamic: []
+
 - name: Swift
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".swift"]
   category: backend
+  dynamic: []
+
 - name: Objective-C
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".m"]
   category: backend
+  dynamic: []
+
 - name: Perl
+  line_comments: ["#"]
+  multi_line: []
+  extensions: [".pl"]
   category: backend
+  dynamic: []
+
 - name: Lua
+  line_comments: ["--"]
+  multi_line: [["--[[", "--]]"]]
+  extensions: [".lua"]
   category: backend
+  dynamic: []
+
 - name: Elixir
+  line_comments: ["#"]
+  multi_line: [["#{", "#}"]]
+  extensions: [".ex", ".exs"]
   category: backend
+  dynamic: []
+
 - name: Groovy
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".groovy"]
   category: backend
+  dynamic: []
+
 - name: PowerShell
+  line_comments: ["#"]
+  multi_line: []
+  extensions: [".ps1"]
   category: backend
+  dynamic: []
+
 - name: C
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".c"]
   category: backend
+  dynamic: []
+
 - name: C++
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".cpp", ".cxx", ".cc"]
   category: backend
-- name: XML
-  category: backend
-  features:
-    file_patterns:
-      - '**/*.xml'
-      - '**/pom.xml'
-      - '**/web.xml'
-      - '**/applicationContext.xml'
-- name: SQL
-  category: backend
-  features:
-    file_patterns:
-      - '**/*.sql'
-      - '**/database/**/*'
-- name: Dockerfile
-  category: backend
-  features:
-    file_patterns:
-      - '**/Dockerfile'
-- name: Makefile
-  category: backend
-  features:
-    file_patterns:
-      - '**/Makefile'
-      - '**/*.mk'
-- name: 'C#'
-  category: backend
+  dynamic: []

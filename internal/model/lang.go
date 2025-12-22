@@ -1,25 +1,29 @@
 package model
 
-// LangFeatures 定义语言的语法特征，用于辅助语言分类
-// - Name: 语法特征名称
-// - Tokens: 语言特有的语法标记
-// - FilePatterns: 语言文件的路径模式
-// - Dependencies: 语言常用的依赖包名称
-
-type LangFeatures struct {
-	Name         string   `json:"name"`
-	Tokens       []string `json:"tokens"`
+// DynamicCategory 动态分类规则
+// - Category: 分类结果
+// - FilePatterns: 关联文件模式（满足任一即可）
+// - Dependencies: 关联依赖包（满足任一即可）
+type DynamicCategory struct {
+	Category     string   `json:"category"`
 	FilePatterns []string `json:"file_patterns"`
 	Dependencies []string `json:"dependencies"`
 }
 
-// LangRule 定义语言分类规则
-// - Name: 语言名称
-// - Category: 语言分类（前端/后端/桌面）
-// - Features: 语言的语法特征
-
-type LangRule struct {
-	Name     string       `json:"name"`
-	Category string       `json:"category"`
-	Features LangFeatures `json:"features"`
+// Language 统一语言模型，整合语言特征和分类规则
+// - Name: 语言名称（如 "Go", "JavaScript"）
+// - LineComments: 行注释标记
+// - MultiLine: 多行注释标记
+// - Extensions: 文件扩展名
+// - Filenames: 特定文件名
+// - Category: 默认分类（frontend/backend/desktop/other）
+// - Dynamic: 动态分类规则列表
+type Language struct {
+	Name         string            `json:"name"`
+	LineComments []string          `json:"line_comments"`
+	MultiLine    [][]string        `json:"multi_line"`
+	Extensions   []string          `json:"extensions"`
+	Filenames    []string          `json:"filenames"`
+	Category     string            `json:"category"`
+	Dynamic      []DynamicCategory `json:"dynamic"`
 }

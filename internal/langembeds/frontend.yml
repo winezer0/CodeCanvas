@@ -1,67 +1,123 @@
-# 语言分类规则
-- name: Vue
-  category: frontend
-  features:
-    file_patterns:
-      - '**/*.vue'
-      - '**/vue.config.js'
-    dependencies:
-      - vue
-      - vue-router
-      - vuex
-      - pinia
-      - nuxt
-- name: Markdown
-  category: frontend
-  features:
-    file_patterns:
-      - '**/*.md'
-      - '**/*.markdown'
-      - '**/README*'
-      - '**/CHANGELOG*'
+# 前端语言规则
 - name: JavaScript
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".js", ".mjs", ".cjs"]
   category: frontend
-  features:
-    dependencies:
-      - react
-      - vue
-      - '@angular/core'
-    file_patterns:
-      - '**/*.jsx'
-      - '**/*.tsx'
+  dynamic:
+    - category: backend
+      dependencies: ["express", "koa", "nestjs", "fastify", "hapi", "meteor"]
+      file_patterns: ["**/server.js", "**/api/**/*.js", "**/backend/**/*.js"]
+    - category: frontend
+      dependencies: ["react", "vue", "@angular/core", "next", "nuxt"]
+      file_patterns: ["**/*.jsx", "**/client/**/*.js", "**/frontend/**/*.js", "**/*.tsx"]
+
+
 - name: TypeScript
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".ts", ".mts", ".cts"]
   category: frontend
-  features:
-    dependencies:
-      - react
-      - vue
-      - '@angular/core'
-    file_patterns:
-      - '**/*.tsx'
+  dynamic:
+    - category: backend
+      dependencies: ["express", "koa", "nestjs", "fastify", "hapi"]
+      file_patterns: ["**/server.ts", "**/api/**/*.ts", "**/backend/**/*.ts"]
+    - category: frontend
+      dependencies: ["react", "vue", "@angular/core", "next", "nuxt"]
+      file_patterns: ["**/*.tsx", "**/client/**/*.ts", "**/frontend/**/*.ts"]
+
+- name: Vue
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".vue"]
+  category: frontend
+  dynamic:
+    - category: frontend
+      dependencies: ["vue", "vue-router", "vuex", "pinia", "nuxt"]
+      file_patterns: ["**/vue.config.js"]
+
+- name: Markdown
+  line_comments: []
+  multi_line: []
+  extensions: [".md", ".markdown"]
+  category: frontend
+  dynamic:
+    - category: frontend
+      file_patterns: ["**/README*", "**/CHANGELOG*"]
+
 - name: JSX
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".jsx"]
   category: frontend
+  dynamic: []
+
 - name: TSX
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".tsx"]
   category: frontend
+  dynamic: []
+
 - name: HTML
+  line_comments: []
+  multi_line: [["<!--", "-->"]]
+  extensions: [".html", ".htm"]
   category: frontend
+  dynamic: []
+
 - name: CSS
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".css", ".scss", ".less"]
   category: frontend
+  dynamic: []
+
 - name: SCSS
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".scss"]
   category: frontend
+  dynamic: []
+
 - name: Less
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".less"]
   category: frontend
+  dynamic: []
+
 - name: WebAssembly
+  line_comments: []
+  multi_line: []
+  extensions: [".wasm"]
   category: frontend
-  features:
-    file_patterns:
-      - '**/*.wasm'
+  dynamic: []
+
 - name: Svelte
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".svelte"]
   category: frontend
-- name: Less
-  category: frontend
+  dynamic: []
+
 - name: Stylus
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".styl"]
   category: frontend
+  dynamic: []
+
 - name: Handlebars
+  line_comments: []
+  multi_line: []
+  extensions: [".hbs", ".handlebars"]
   category: frontend
+  dynamic: []
+
 - name: Pug
+  line_comments: ["//"]
+  multi_line: []
+  extensions: [".pug", ".jade"]
   category: frontend
+  dynamic: []

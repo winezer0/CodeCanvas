@@ -69,8 +69,8 @@ func EmbeddedFrameRules() []*model.Framework {
 // 支持两种 YAML 格式：
 //  1. 单个文件包含一个 LangRule 数组（推荐）
 //  2. 多文档 YAML 流（每个文档是一个规则）
-func EmbeddedLangRules() map[string]model.LangRule {
-	rules := make(map[string]model.LangRule)
+func EmbeddedLangRules() map[string]model.Language {
+	rules := make(map[string]model.Language)
 
 	files, err := fs.Glob(langembeds.LanguageEmbedFS, "*.yml")
 	if err != nil {
@@ -84,7 +84,7 @@ func EmbeddedLangRules() map[string]model.LangRule {
 		}
 
 		// 尝试作为单文档数组解析
-		var rulesArray []model.LangRule
+		var rulesArray []model.Language
 		if err := yaml.Unmarshal(content, &rulesArray); err == nil && len(rulesArray) > 0 && rulesArray[0].Name != "" {
 			for _, rule := range rulesArray {
 				if rule.Name != "" {
@@ -97,7 +97,7 @@ func EmbeddedLangRules() map[string]model.LangRule {
 		// 回退到多文档流解析
 		decoder := yaml.NewDecoder(strings.NewReader(string(content)))
 		for {
-			var rule model.LangRule
+			var rule model.Language
 			if err := decoder.Decode(&rule); err != nil {
 				if errors.Is(err, io.EOF) {
 					break

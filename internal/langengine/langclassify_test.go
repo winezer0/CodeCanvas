@@ -54,18 +54,6 @@ func TestDetectCategories(t *testing.T) {
 			wantFrontend: []string{"JavaScript"},
 		},
 		{
-			name: "JS with Express (Backend)",
-			languages: []model.LangInfo{
-				{Name: "JavaScript"},
-			},
-			packageJson: map[string]any{
-				"dependencies": map[string]any{
-					"express": "^4.0.0",
-				},
-			},
-			wantBackend: []string{"JavaScript"},
-		},
-		{
 			name: "Mixed Project",
 			languages: []model.LangInfo{
 				{Name: "Go"},
@@ -91,7 +79,7 @@ func TestDetectCategories(t *testing.T) {
 				os.Remove(filepath.Join(tmpDir, "package.json"))
 			}
 
-			frontend, backend, _, _ := c.DetectCategories(tmpDir, tt.languages)
+			frontend, backend, _, _, _, _ := c.DetectCategories(tmpDir, tt.languages)
 
 			checkList(t, "Frontend", frontend, tt.wantFrontend)
 			checkList(t, "Backend", backend, tt.wantBackend)

@@ -1,32 +1,30 @@
-# 语言分类规则
+# 桌面语言规则
 - name: Python
+  line_comments: ["#"]
+  multi_line: [["\"\"\"", "\"\"\""], ["'\"'", "'\"'"]]
+  extensions: [".py"]
   category: desktop
-  features:
-    dependencies:
-      - tkinter
-      - pyqt5
-      - pysimplegui
-      - wxpython
-      - kivy
+  dynamic:
+    - category: desktop
+      dependencies: ["tkinter", "pyqt5", "pysimplegui", "wxpython", "kivy"]
+      file_patterns: ["**/*.pyw"]
+
 - name: Rust
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".rs"]
   category: desktop
-  features:
-    dependencies:
-      - gtk
-      - qt_widgets
-      - fltk
-      - tauri
-    file_patterns:
-      - '**/Cargo.toml'
-      - '**/*.rs'
+  dynamic:
+    - category: desktop
+      dependencies: ["gtk", "qt_widgets", "fltk", "tauri"]
+      file_patterns: ["**/Cargo.toml"]
+
 - name: 'C#'
+  line_comments: ["//"]
+  multi_line: [["/*", "*/"]]
+  extensions: [".cs"]
   category: desktop
-  features:
-    dependencies:
-      - wpf
-      - winforms
-      - avalonia
-      - uno.platform
-    file_patterns:
-      - '**/*.xaml'
-      - '**/*.csproj'
+  dynamic:
+    - category: desktop
+      dependencies: ["wpf", "winforms", "avalonia", "uno.platform"]
+      file_patterns: ["**/*.xaml", "**/*.csproj"]

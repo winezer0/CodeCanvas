@@ -38,7 +38,7 @@ type CodeProfile struct {
 	DesktopLanguages  []string   `json:"desktop_languages"`  // 例如: ["C#", "C++"]
 	OtherLanguages    []string   `json:"other_languages"`    // 例如: ["JSON", "YAML"]
 	Languages         []string   `json:"languages"`
-	ExpandLanguages   []string   `json:"expand_languages"`
+	Expands           []string   `json:"expands"`
 }
 
 // DetectionInfo 框架与组件识别结果 包含已检测到的框架和组件的列表。

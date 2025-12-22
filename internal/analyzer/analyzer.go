@@ -9,7 +9,9 @@ import (
 	"sync"
 
 	"github.com/winezer0/codecanvas/internal/langengine"
+	"github.com/winezer0/codecanvas/internal/logging"
 	"github.com/winezer0/codecanvas/internal/model"
+	"github.com/winezer0/codecanvas/internal/utils"
 )
 
 // CodeAnalyzer 实现代码画像分析功能。
@@ -23,7 +25,7 @@ func NewCodeAnalyzer() *CodeAnalyzer {
 // AnalysisTask 定义一个分析任务
 type AnalysisTask struct {
 	Path    string
-	LangDef *LangDefine
+	LangDef *model.Language
 }
 
 // AnalysisResult 定义分析结果
@@ -34,9 +36,22 @@ type AnalysisResult struct {
 }
 
 var (
-	extToLanguage  = make(map[string]*LangDefine)
-	fileToLanguage = make(map[string]*LangDefine)
+	extToLanguage  = make(map[string]*model.Language)
+	fileToLanguage = make(map[string]*model.Language)
 )
+
+// init 初始化语言映射
+func init() {
+	// 初始化语言映射，直接使用新的语言规则
+	for _, language := range langengine.LanguageRules {
+		for _, ext := range language.Extensions {
+			extToLanguage[strings.ToLower(ext)] = &language
+		}
+		for _, name := range language.Filenames {
+			fileToLanguage[name] = &language
+		}
+	}
+}
 
 // AnalyzeCodeProfile 分析给定路径下的代码库并返回代码画像和文件索引。
 func (a *CodeAnalyzer) AnalyzeCodeProfile(projectPath string) (*model.CodeProfile, *model.FileIndex, error) {
@@ -45,14 +60,11 @@ func (a *CodeAnalyzer) AnalyzeCodeProfile(projectPath string) (*model.CodeProfil
 	if err != nil {
 		return nil, nil, err
 	}
-	// 初始化langMap
-	initFileInfoToLangeMap()
-
 	// 初始化文件索引
 	fileIndex := model.NewFileIndex(absPath)
-
 	// 准备并发处理
-	workers := runtime.NumCPU() / 4
+	workers := autoWorkers()
+
 	tasks := make(chan AnalysisTask, workers)
 	results := make(chan AnalysisResult, workers)
 	var wg sync.WaitGroup
@@ -63,7 +75,7 @@ func (a *CodeAnalyzer) AnalyzeCodeProfile(projectPath string) (*model.CodeProfil
 		go func() {
 			defer wg.Done()
 			for task := range tasks {
-				stats, err := CountFileStats(task.Path, task.LangDef)
+				stats, err := CountFileStats(task.Path)
 				results <- AnalysisResult{
 					LangName: task.LangDef.Name,
 					Stats:    stats,
@@ -117,7 +129,11 @@ func (a *CodeAnalyzer) AnalyzeCodeProfile(projectPath string) (*model.CodeProfil
 		fileIndex.AddFile(relPath, dirEntry.Name(), filepath.Ext(dirEntry.Name()))
 
 		// 识别语言
-		langDef := parseFileLangByLangeMap(path, dirEntry)
+		langDef := extToLanguage[strings.ToLower(filepath.Ext(path))]
+		if langDef == nil {
+			langDef = fileToLanguage[dirEntry.Name()]
+		}
+
 		if langDef != nil {
 			// 分发任务
 			tasks <- AnalysisTask{
@@ -139,6 +155,17 @@ func (a *CodeAnalyzer) AnalyzeCodeProfile(projectPath string) (*model.CodeProfil
 
 	codeProfile := convertToCodeProfile(absPath, stats, errorFiles)
 	return codeProfile, fileIndex, nil
+}
+
+func autoWorkers() int {
+	workers := runtime.NumCPU() / 4
+	if workers < 1 {
+		workers = 1
+	}
+	if workers > runtime.NumCPU() {
+		workers = runtime.NumCPU()
+	}
+	return workers
 }
 
 // convertToCodeProfile converts statistics to CodeCanvas CodeProfile.
@@ -175,37 +202,15 @@ func convertToCodeProfile(absPath string, stats map[string]*model.LangSummary, e
 		profile.TotalLines += langInfo.CodeLines + langInfo.CommentLines + langInfo.BlankLines
 	}
 
-	// 进行语言信息优化
-	langClassifier := langengine.NewLangClassifier()
-	frontend, backend, desktop, other, allLang := langClassifier.DetectCategories(absPath, profile.LanguageInfos)
+	logging.Infof("profile ToJson: %s", utils.ToJson(profile))
+
+	// 进行语言信息分析
+	frontend, backend, desktop, other, allLang, expand := langengine.NewLangClassifier().DetectCategories(absPath, profile.LanguageInfos)
 	profile.FrontendLanguages = frontend
 	profile.BackendLanguages = backend
 	profile.DesktopLanguages = desktop
 	profile.OtherLanguages = other
 	profile.Languages = allLang
-	profile.ExpandLanguages = langengine.ExpandLanguages(allLang)
+	profile.Expands = expand
 	return profile
-}
-
-// initFileInfoToLangeMap 初始化语言映射
-func initFileInfoToLangeMap() {
-	for i := range LangDefines {
-		lang := &LangDefines[i]
-		for _, ext := range lang.Extensions {
-			extToLanguage[ext] = lang
-		}
-		for _, name := range lang.Filenames {
-			fileToLanguage[name] = lang
-		}
-	}
-}
-
-// parseFileLangByLangeMap
-func parseFileLangByLangeMap(path string, dirEntry os.DirEntry) *LangDefine {
-	ext := filepath.Ext(path)
-	langDef := extToLanguage[strings.ToLower(ext)]
-	if langDef == nil {
-		langDef = fileToLanguage[dirEntry.Name()]
-	}
-	return langDef
 }
